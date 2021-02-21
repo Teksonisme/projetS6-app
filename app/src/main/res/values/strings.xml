@@ -1,4 +1,5 @@
 <resources>
-    <string name="app_name">Find\' it</string>
+    <string name="app_name">Let\'s Find it</string>
     <string name="button_menu">Menu</string>
+    <string name="default_text">Defaultum</string>
 </resources>

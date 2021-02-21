@@ -9,4 +9,7 @@
     <item
         android:id="@+id/access"
         android:title="Accessibilité" />
+    <item
+        android:id="@+id/home"
+        android:title="Home" />
 </menu>

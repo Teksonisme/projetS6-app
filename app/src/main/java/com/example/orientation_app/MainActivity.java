@@ -2,6 +2,7 @@ package com.example.orientation_app;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -92,14 +93,19 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.param:
+                //fonction ici pour changer les paramètres
+                goToParam();
                 return true;
             case R.id.access:
+                //fonction ici pour changer l'accessibilité
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
-
+    public void goToParam(){
+        startActivity(new Intent(MainActivity.this, MenuActivity.class));
+    }
     public void onClickMenu(View v){
 
     }
