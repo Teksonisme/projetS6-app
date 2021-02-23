@@ -17,27 +17,28 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.opencsv.CSVReader;
-
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    boolean isSyncVocalEnabled = false;
     ImageView boussoleView;
-    TextView angleNorth;
-
+    TextView angleNorth,latitudeHere,longitudeHere,distance,bearing;
+    double latitude,longitude;
     // ** Programmer world : https://www.youtube.com/watch?v=Dqg1A4hy-jI
     private SensorManager sensorManager;
     private Sensor sensorAccelerometer;
     private Sensor sensorMagneticField;
+
+    private Tracker gpsTracker;
 
     private float[] floatGravity = new float[3];
     private float[] floatGeoMagnetic = new float[3];
@@ -56,6 +57,12 @@ public class MainActivity extends AppCompatActivity {
 
         boussoleStart();
         readInterestFile();
+
+        latitudeHere = findViewById(R.id.latitudeHere);
+        longitudeHere = findViewById(R.id.longitudeHere);
+        distance = findViewById(R.id.distance);
+        bearing = findViewById(R.id.bearingValue);
+        getLocation(latitudeHere,longitudeHere);
     }
 
     // ** Programmer world
@@ -74,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
                 goToParam();
                 return true;
             case R.id.access:
-                //fonction ici pour changer l'accessibilité
+                isSyncVocalEnabled = !isSyncVocalEnabled;
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -130,34 +137,11 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-    public void readCSVFile() {
-        try {
-            String csvfileString = this.getApplicationInfo().dataDir + File.separatorChar + "interests.csv";
-            File csvfile = new File(csvfileString);
 
-            CSVReader reader = new CSVReader(new FileReader(csvfile.getAbsolutePath()));
-            String[] nextLine;
-            while ((nextLine = reader.readNext()) != null) {
-                System.out.println("Name"+nextLine[0] + " long: "+nextLine[1] + " lat:"+nextLine[2]);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, "The specified file was not found", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    public float getDistanceFromHereToInterest(float latitudeHere, float longitudeHere, Interest interest){
-        float distance = 0.f;
-        double pi = 3.141592653589793;
-        double radius = 6378.13;
-
-
-        return distance;
-    }
     // ** Programmer world : https://www.youtube.com/watch?v=Dqg1A4hy-jI ****
     public void boussoleStart(){
-        boussoleView = findViewById(R.id.imageView);
-        angleNorth = findViewById(R.id.textView2);
+        boussoleView = findViewById(R.id.boussoleView);
+        angleNorth = findViewById(R.id.angleText);
 
         // ** Programmer world **
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -174,7 +158,6 @@ public class MainActivity extends AppCompatActivity {
                 SensorManager.getOrientation(floatRotationMatrix, floatOrientation);
 
                 boussoleView.setRotation((float) (-floatOrientation[0] * 180 / 3.14159));
-                angleNorth.setText("" + (float) (-floatOrientation[0] * 180 / 3.14159) + "°");
             }
 
             @Override
@@ -191,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
                 SensorManager.getOrientation(floatRotationMatrix, floatOrientation);
 
                 boussoleView.setRotation((float) (-floatOrientation[0] * 180 / 3.14159));
-                angleNorth.setText("" + (float) (-floatOrientation[0] * 180 / 3.14159) + "°");
+                angleNorth.setText("" + (float) ((Math.toDegrees(floatOrientation[0]))+360)%360 + "°");
             }
 
             @Override
@@ -202,4 +185,12 @@ public class MainActivity extends AppCompatActivity {
         sensorManager.registerListener(sensorEventListenerMagneticField, sensorMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
     }
     // ** Programmer world
+
+    public void getLocation(TextView latitudeHere, TextView longitudeHere){
+        gpsTracker = new Tracker(MainActivity.this,latitudeHere,longitudeHere,distance,interestPoints,bearing);
+    }
+
+    public void searchInterestInFront(){
+
+    }
 }
