@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     boolean isSyncVocalEnabled = false;
     ImageView boussoleView;
     TextView angleNorth,latitudeHere,longitudeHere,distance,bearing;
+    Button updateButton;
     double latitude,longitude;
     // ** Programmer world : https://www.youtube.com/watch?v=Dqg1A4hy-jI
     private SensorManager sensorManager;
@@ -57,11 +59,21 @@ public class MainActivity extends AppCompatActivity {
 
         boussoleStart();
         readInterestFile();
-
+        updateButton = findViewById(R.id.button);
+        updateButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                updateAll();
+            }
+        });
         latitudeHere = findViewById(R.id.latitudeHere);
         longitudeHere = findViewById(R.id.longitudeHere);
         distance = findViewById(R.id.distance);
         getLocation(latitudeHere,longitudeHere);
+    }
+
+    private void updateAll() {
+        gpsTracker.updateHere(latitudeHere,longitudeHere,distance);
     }
 
     // ** Programmer world

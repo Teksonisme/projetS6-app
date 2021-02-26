@@ -27,13 +27,20 @@ import java.util.List;
 public class Tracker extends Service implements LocationListener {
 
     private final Context context;
+
     boolean isGPSEnabled = false;
     boolean isNetworkEnabled = false;
     boolean canGetLocation = false;
-    volatile boolean exit = false;
+
+    volatile boolean exit = false, updateInProgress = false;
+
     TextView latitudeHere, longitudeHere, distance, bearing;
+
     Location location;
+
     List<Interest> interestPoints;
+
+    int EARTH_RADIUS = 6371;
 
     public void setLocation(Location location) {
         this.location = location;
@@ -70,8 +77,6 @@ public class Tracker extends Service implements LocationListener {
         this.interestPoints = interestList;
         this.bearing = bearing;
         this.location = getLocation();
-        doCalculation calculate = new doCalculation();
-        new Thread(calculate).start();
     }
 
     private Location getLocation() {
@@ -99,11 +104,6 @@ public class Tracker extends Service implements LocationListener {
                     if (locationManager != null) {
                         location = locationManager
                                 .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-
-                        if (location != null) {
-                            latitude = location.getLatitude();
-                            longitude = location.getLongitude();
-                        }
                     }
                 }
                 if (isGPSEnabled) {
@@ -119,30 +119,17 @@ public class Tracker extends Service implements LocationListener {
                     if (locationManager != null) {
                         location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     }
-                    if (location != null) {
-                        latitude = location.getLatitude();
-                        longitude = location.getLongitude();
-                    }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        NumberFormat formatter = new DecimalFormat("#0.00000");
-        if (this.canGetLocation()) {
-            latitude = Double.parseDouble(formatter.format(this.getLatitude()));
-            longitude = Double.parseDouble(formatter.format(this.getLongitude()));
-            latitudeHere.setText(String.valueOf(latitude));
-            longitudeHere.setText(String.valueOf(longitude));
-        } else {
-            Toast.makeText(context, "Permissions de géolocalisation refusées", Toast.LENGTH_SHORT).show();
-        }
+
         return location;
     }
 
     // *** part of code from : https://www.geeksforgeeks.org/program-distance-two-points-earth/
     public void findDistance() {
-        double earthRadius = 6371;
         double latitudeRad = Math.toRadians(latitude), longitudeRad = Math.toRadians(longitude);
         double latitudeInterestRad = Math.toRadians(interestPoints.get(0).getLatitude()), longitudeInterestRad = Math.toRadians(interestPoints.get(0).getLongitude());
         double dLat = latitudeRad - latitudeInterestRad;
@@ -154,7 +141,7 @@ public class Tracker extends Service implements LocationListener {
                 * Math.pow(Math.sin(dLong / 2), 2);
         double c = 2 * Math.asin(Math.sqrt(x));
         NumberFormat formatter = new DecimalFormat("#0.00");
-        String dist = formatter.format(earthRadius * c);
+        String dist = formatter.format(EARTH_RADIUS * c);
 
         this.distance.setText("" + dist + " kilomètres");
 
@@ -213,37 +200,6 @@ public class Tracker extends Service implements LocationListener {
         return name;
     }
 
-
-    public class doCalculation implements Runnable {
-        double earthRadius = 6371;
-        double latitudeRad = Math.toRadians(latitude), longitudeRad = Math.toRadians(longitude);
-        double latitudeInterestRad = Math.toRadians(interestPoints.get(0).getLatitude()), longitudeInterestRad = Math.toRadians(interestPoints.get(0).getLongitude());
-        double dLat = latitudeRad - latitudeInterestRad;
-        double dLong = longitudeRad - longitudeInterestRad;
-        double x, c;
-
-        @Override
-        public void run() {
-
-            while (!exit) {
-                //distance
-                x = Math.pow(Math.sin(dLat / 2), 2)
-                        + Math.cos(latitudeRad) * Math.cos(latitudeInterestRad)
-                        * Math.pow(Math.sin(dLong / 2), 2);
-                c = 2 * Math.asin(Math.sqrt(x));
-                NumberFormat formatter = new DecimalFormat("#0.00");
-                String dist = formatter.format(earthRadius * c);
-
-
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
     @Override
     public void onLocationChanged(Location location) {
     }
@@ -266,5 +222,66 @@ public class Tracker extends Service implements LocationListener {
 
     public boolean canGetLocation() {
         return canGetLocation;
+    }
+
+    public void updateHere(TextView latitudeHere, TextView longitudeHere, TextView distanceToPoint) {
+
+        if (!updateInProgress) {
+            updateInProgress = true;
+            DoCalculation calculate = new DoCalculation();
+            new Thread(calculate).start();
+        } else {
+            Toast.makeText(context, "Doucement sur le bouton !", Toast.LENGTH_LONG);
+        }
+
+
+    }
+
+    public class DoCalculation implements Runnable {
+        @Override
+        public void run() {
+
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions((Activity) context, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
+            }
+            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            latitude = location.getLatitude();
+            longitude = location.getLongitude();
+
+            double latitudeRad = Math.toRadians(latitude), longitudeRad = Math.toRadians(longitude);
+            double latitudeInterestRad = Math.toRadians(interestPoints.get(0).getLatitude()), longitudeInterestRad = Math.toRadians(interestPoints.get(0).getLongitude());
+            double dLat = latitudeRad - latitudeInterestRad;
+            double dLong = longitudeRad - longitudeInterestRad;
+            double x = Math.pow(Math.sin(dLat / 2), 2)
+                    + Math.cos(latitudeRad) * Math.cos(latitudeInterestRad)
+                    * Math.pow(Math.sin(dLong / 2), 2);
+            double c = 2 * Math.asin(Math.sqrt(x));
+
+            NumberFormat formatter = new DecimalFormat("#0.00");
+            String dist = formatter.format(EARTH_RADIUS * c);
+
+
+            NumberFormat formatter2 = new DecimalFormat("#0.00000");
+            latitudeHere.post(new Runnable() {
+                @Override
+                public void run() {
+                    latitudeHere.setText(""+formatter2.format(location.getLatitude()));
+                }
+            });
+            longitudeHere.post(new Runnable() {
+                @Override
+                public void run() {
+                    longitudeHere.setText(""+formatter2.format(location.getLongitude()));
+                }
+            });
+            distance.post(new Runnable() {
+                @Override
+                public void run() {
+                    distance.setText("" + dist + " kilomètres");
+                }
+            });
+            Log.d("Thread findind distance","Thread has finished to update");
+            updateInProgress = false;
+        }
     }
 }
