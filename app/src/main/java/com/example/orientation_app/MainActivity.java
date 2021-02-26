@@ -61,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
         latitudeHere = findViewById(R.id.latitudeHere);
         longitudeHere = findViewById(R.id.longitudeHere);
         distance = findViewById(R.id.distance);
-        bearing = findViewById(R.id.bearingValue);
         getLocation(latitudeHere,longitudeHere);
     }
 

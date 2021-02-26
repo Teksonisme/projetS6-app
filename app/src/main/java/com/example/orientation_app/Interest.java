@@ -6,7 +6,6 @@ public class Interest {
     private float latitude;
     private float longitude;
 
-
     public float getLatitude() {
         return latitude;
     }

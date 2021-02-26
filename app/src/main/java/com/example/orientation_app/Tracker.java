@@ -30,7 +30,8 @@ public class Tracker extends Service implements LocationListener {
     boolean isGPSEnabled = false;
     boolean isNetworkEnabled = false;
     boolean canGetLocation = false;
-    TextView latitudeHere, longitudeHere, distance,bearing;
+    volatile boolean exit = false;
+    TextView latitudeHere, longitudeHere, distance, bearing;
     Location location;
     List<Interest> interestPoints;
 
@@ -61,14 +62,16 @@ public class Tracker extends Service implements LocationListener {
 
     protected LocationManager locationManager;
 
-    Tracker(Context context, TextView lat, TextView longi, TextView distance, List<Interest> interestList,TextView bearing) {
+    Tracker(Context context, TextView lat, TextView longi, TextView distance, List<Interest> interestList, TextView bearing) {
         this.context = context;
         this.latitudeHere = lat;
         this.longitudeHere = longi;
         this.distance = distance;
         this.interestPoints = interestList;
         this.bearing = bearing;
-        getLocation();
+        this.location = getLocation();
+        doCalculation calculate = new doCalculation();
+        new Thread(calculate).start();
     }
 
     private Location getLocation() {
@@ -156,25 +159,27 @@ public class Tracker extends Service implements LocationListener {
         this.distance.setText("" + dist + " kilomètres");
 
     }
+
     // Mixel answer : https://stackoverflow.com/questions/9457988/bearing-from-one-coordinate-to-another
-    public void findBearing(){
+    public void findBearing() {
         double latitudeRad = Math.toRadians(latitude), longitudeRad = Math.toRadians(longitude);
         double latitudeInterestRad = Math.toRadians(interestPoints.get(0).getLatitude()), longitudeInterestRad = Math.toRadians(interestPoints.get(0).getLongitude());
 
         double dLong = longitudeInterestRad - longitudeRad;
 
         double x = Math.atan2(Math.sin(dLong) * Math.cos(latitudeInterestRad),
-                Math.cos(latitudeRad)*Math.sin(latitudeInterestRad) - Math.sin(latitudeRad) * Math.cos(latitudeInterestRad) * Math.cos(dLong));
+                Math.cos(latitudeRad) * Math.sin(latitudeInterestRad) - Math.sin(latitudeRad) * Math.cos(latitudeInterestRad) * Math.cos(dLong));
 
-        this.bearing.setText(""+(Math.toDegrees(x) + 360)%360);
+        this.bearing.setText("" + (Math.toDegrees(x) + 360) % 360);
 
     }
-    public String[][] findAllBearing(List<Interest> interestPoints){
-        double latitudeRad, latitudeInterestRad,longitudeRad, longitudeInterestRad, dLong;
-        int i=0,j=0;
+
+    public String[][] findAllBearing(List<Interest> interestPoints) {
+        double latitudeRad, latitudeInterestRad, longitudeRad, longitudeInterestRad, dLong;
+        int i = 0, j = 0;
         String[][] interestsWithBearing = null;
 
-        for(Interest interest : interestPoints){
+        for (Interest interest : interestPoints) {
             latitudeRad = Math.toRadians(latitude);
             longitudeRad = Math.toRadians(longitude);
             latitudeInterestRad = Math.toRadians(interest.getLatitude());
@@ -183,22 +188,22 @@ public class Tracker extends Service implements LocationListener {
             dLong = longitudeInterestRad - longitudeRad;
 
             double x = Math.atan2(Math.sin(dLong) * Math.cos(latitudeInterestRad),
-                    Math.cos(latitudeRad)*Math.sin(latitudeInterestRad) - Math.sin(latitudeRad) * Math.cos(latitudeInterestRad) * Math.cos(dLong));
+                    Math.cos(latitudeRad) * Math.sin(latitudeInterestRad) - Math.sin(latitudeRad) * Math.cos(latitudeInterestRad) * Math.cos(dLong));
 
             interestsWithBearing[i][j] = interest.getName();
-            interestsWithBearing[i][j+1] = ""+x;
+            interestsWithBearing[i][j + 1] = "" + x;
             i++;
         }
         return interestsWithBearing;
     }
-    public String searchInterestInFront(String[][] interests, double angle){
+
+    public String searchInterestInFront(String[][] interests, double angle) {
         String name = "None";
         int i = 0;
-        for(String[] angleCompare : interests){
-            if(angle>180){
+        for (String[] angleCompare : interests) {
+            if (angle > 180) {
 
-            }
-            else{
+            } else {
 
             }
 
@@ -207,11 +212,40 @@ public class Tracker extends Service implements LocationListener {
 
         return name;
     }
+
+
+    public class doCalculation implements Runnable {
+        double earthRadius = 6371;
+        double latitudeRad = Math.toRadians(latitude), longitudeRad = Math.toRadians(longitude);
+        double latitudeInterestRad = Math.toRadians(interestPoints.get(0).getLatitude()), longitudeInterestRad = Math.toRadians(interestPoints.get(0).getLongitude());
+        double dLat = latitudeRad - latitudeInterestRad;
+        double dLong = longitudeRad - longitudeInterestRad;
+        double x, c;
+
+        @Override
+        public void run() {
+
+            while (!exit) {
+                //distance
+                x = Math.pow(Math.sin(dLat / 2), 2)
+                        + Math.cos(latitudeRad) * Math.cos(latitudeInterestRad)
+                        * Math.pow(Math.sin(dLong / 2), 2);
+                c = 2 * Math.asin(Math.sqrt(x));
+                NumberFormat formatter = new DecimalFormat("#0.00");
+                String dist = formatter.format(earthRadius * c);
+
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     @Override
     public void onLocationChanged(Location location) {
-        getLocation();
-        findDistance();
-        findBearing();
     }
 
     @Override
