@@ -160,7 +160,7 @@ public class Tracker extends Service implements LocationListener {
         this.bearing.setText("" + (Math.toDegrees(x) + 360) % 360);
 
     }
-
+    // Work in progress
     public String[][] findAllBearing(List<Interest> interestPoints) {
         double latitudeRad, latitudeInterestRad, longitudeRad, longitudeInterestRad, dLong;
         int i = 0, j = 0;
@@ -183,7 +183,7 @@ public class Tracker extends Service implements LocationListener {
         }
         return interestsWithBearing;
     }
-
+    // Work in progress
     public String searchInterestInFront(String[][] interests, double angle) {
         String name = "None";
         int i = 0;
@@ -236,7 +236,7 @@ public class Tracker extends Service implements LocationListener {
 
 
     }
-
+    // Work in progress
     public class DoCalculation implements Runnable {
         @Override
         public void run() {

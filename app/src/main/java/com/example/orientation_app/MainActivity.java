@@ -57,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        boussoleStart();
         readInterestFile();
         updateButton = findViewById(R.id.button);
         updateButton.setOnClickListener(new View.OnClickListener(){
@@ -70,6 +69,10 @@ public class MainActivity extends AppCompatActivity {
         longitudeHere = findViewById(R.id.longitudeHere);
         distance = findViewById(R.id.distance);
         getLocation(latitudeHere,longitudeHere);
+
+        Boussole boussole = new Boussole(this,(SensorManager) getSystemService(SENSOR_SERVICE),findViewById(R.id.boussoleView),findViewById(R.id.angleText));
+        boussole.boussoleStart();
+        updateAll();
     }
 
     private void updateAll() {
@@ -139,63 +142,18 @@ public class MainActivity extends AppCompatActivity {
                 // Log the object
                 Log.d("My Activity", "Just created: " + interest);
             }
+            reader.close();
+            is.close();
 
         } catch (IOException e) {
             // Logs error with priority level
             Log.wtf("MyActivity", "Error reading data file on line" + line, e);
-
             // Prints throwable details
             e.printStackTrace();
         }
     }
 
-    // ** Programmer world : https://www.youtube.com/watch?v=Dqg1A4hy-jI ****
-    public void boussoleStart(){
-        boussoleView = findViewById(R.id.boussoleView);
-        angleNorth = findViewById(R.id.angleText);
 
-        // ** Programmer world **
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-
-        sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorMagneticField = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-
-        SensorEventListener sensorEventListenerAccelerometer = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                floatGravity = event.values;
-
-                SensorManager.getRotationMatrix(floatRotationMatrix, null, floatGravity, floatGeoMagnetic);
-                SensorManager.getOrientation(floatRotationMatrix, floatOrientation);
-
-                boussoleView.setRotation((float) (-floatOrientation[0] * 180 / 3.14159));
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
-            }
-        };
-
-        SensorEventListener sensorEventListenerMagneticField = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                floatGeoMagnetic = event.values;
-
-                SensorManager.getRotationMatrix(floatRotationMatrix, null, floatGravity, floatGeoMagnetic);
-                SensorManager.getOrientation(floatRotationMatrix, floatOrientation);
-
-                boussoleView.setRotation((float) (-floatOrientation[0] * 180 / 3.14159));
-                angleNorth.setText("" + (float) ((Math.toDegrees(floatOrientation[0]))+360)%360 + "°");
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
-            }
-        };
-        sensorManager.registerListener(sensorEventListenerAccelerometer, sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(sensorEventListenerMagneticField, sensorMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
-    }
-    // ** Programmer world
 
     public void getLocation(TextView latitudeHere, TextView longitudeHere){
         gpsTracker = new Tracker(MainActivity.this,latitudeHere,longitudeHere,distance,interestPoints,bearing);

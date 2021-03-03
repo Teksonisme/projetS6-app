@@ -31,10 +31,9 @@
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.518"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.778"
+        app:layout_constraintVertical_bias="0.816"
         app:srcCompat="@drawable/logo_la_bouss_2020_avatar" />
 
     <ImageView
@@ -54,9 +53,9 @@
         android:id="@+id/backRectGrey"
         android:layout_width="0dp"
         android:layout_height="177dp"
-        android:layout_marginTop="192dp"
+        android:layout_marginTop="172dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.52"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/rectangle" />
@@ -74,30 +73,31 @@
 
     <TextView
         android:id="@+id/angleText"
-        android:layout_width="48dp"
-        android:layout_height="25dp"
+        android:layout_width="102dp"
+        android:layout_height="20dp"
         android:layout_marginStart="2dp"
         android:layout_marginLeft="2dp"
-        android:layout_marginEnd="160dp"
-        android:layout_marginRight="160dp"
-        android:layout_marginBottom="124dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginRight="32dp"
+        android:layout_marginBottom="108dp"
         android:fontFamily="@font/source_serif_pro"
+        android:gravity="center"
         android:text="0"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.09"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/angleText2" />
 
     <TextView
         android:id="@+id/angleText2"
         android:layout_width="48dp"
         android:layout_height="25dp"
-        android:layout_marginBottom="124dp"
+        android:layout_marginBottom="120dp"
         android:fontFamily="@font/source_serif_pro"
         android:text="Angle :"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.46"
+        app:layout_constraintHorizontal_bias="0.826"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
