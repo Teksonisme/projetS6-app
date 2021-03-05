@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity {
     private List<Interest> interestPoints = new ArrayList<>();
 
     // ** Programmer world
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
     }
     public void readInterestFile(){
         // Read the raw csv file
-        InputStream is = getResources().openRawResource(R.raw.interest);
+        InputStream is = getResources().openRawResource(R.raw.couloisy_test);
 
         // Reads text from character-input stream, buffering characters for efficient reading
         BufferedReader reader = new BufferedReader(
@@ -152,8 +151,6 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-
-
 
     public void getLocation(TextView latitudeHere, TextView longitudeHere){
         gpsTracker = new Tracker(MainActivity.this,latitudeHere,longitudeHere,distance,interestPoints,bearing);

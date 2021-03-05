@@ -2,25 +2,33 @@ package com.example.orientation_app;
 
 public class Interest {
 
-    private String name;
+    private String name, type;
     private float latitude;
     private float longitude;
+
 
     public float getLatitude() {
         return latitude;
     }
+
     public void setLatitude(float latitude) {
         this.latitude = latitude;
     }
+
     public float getLongitude() {
         return longitude;
     }
+
     public void setLongitude(float longitude) {
         this.longitude = longitude;
     }
+
+    public void setType(String type) { this.type = type;  }
+
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }

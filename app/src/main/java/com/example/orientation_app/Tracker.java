@@ -21,6 +21,7 @@ import androidx.core.app.ActivityCompat;
 import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 //Inspiré de : https://howtodoandroid.medium.com/how-to-get-current-latitude-and-longitude-in-android-example-35437a51052a
@@ -150,14 +151,15 @@ public class Tracker extends Service implements LocationListener {
     // Mixel answer : https://stackoverflow.com/questions/9457988/bearing-from-one-coordinate-to-another
     public void findBearing() {
         double latitudeRad = Math.toRadians(latitude), longitudeRad = Math.toRadians(longitude);
-        double latitudeInterestRad = Math.toRadians(interestPoints.get(0).getLatitude()), longitudeInterestRad = Math.toRadians(interestPoints.get(0).getLongitude());
+        double latitudeInterestRad = Math.toRadians(interestPoints.get(5).getLatitude()), longitudeInterestRad = Math.toRadians(interestPoints.get(5).getLongitude());
 
         double dLong = longitudeInterestRad - longitudeRad;
 
         double x = Math.atan2(Math.sin(dLong) * Math.cos(latitudeInterestRad),
                 Math.cos(latitudeRad) * Math.sin(latitudeInterestRad) - Math.sin(latitudeRad) * Math.cos(latitudeInterestRad) * Math.cos(dLong));
 
-        this.bearing.setText("" + (Math.toDegrees(x) + 360) % 360);
+        Log.d("Bearing","" + ((Math.toDegrees(x) + 360) % 360));
+
 
     }
     // Work in progress
@@ -199,7 +201,21 @@ public class Tracker extends Service implements LocationListener {
 
         return name;
     }
+    public List<InterestWithDistance> makeOrientationTable(List<Interest> listOfInterests){
 
+        List<InterestWithDistance> orientationTable = new ArrayList<>();
+        for(Interest interest : listOfInterests){
+        }
+        return null;
+    }
+
+    public double findDistanceToInterest(Interest interest){
+                double x = Math.pow(Math.sin((Math.toRadians(latitude) -  Math.toRadians(interest.getLatitude())) / 2), 2)
+                + Math.cos(Math.toRadians(latitude)) * Math.cos(Math.toRadians(interest.getLongitude()))
+                * Math.pow(Math.sin((Math.toRadians(longitude) - Math.toRadians(interest.getLongitude())) / 2), 2);
+        double c = 2 * Math.asin(Math.sqrt(x));
+        return EARTH_RADIUS * c;
+    }
     @Override
     public void onLocationChanged(Location location) {
     }
@@ -248,18 +264,16 @@ public class Tracker extends Service implements LocationListener {
             latitude = location.getLatitude();
             longitude = location.getLongitude();
 
-            double latitudeRad = Math.toRadians(latitude), longitudeRad = Math.toRadians(longitude);
-            double latitudeInterestRad = Math.toRadians(interestPoints.get(0).getLatitude()), longitudeInterestRad = Math.toRadians(interestPoints.get(0).getLongitude());
-            double dLat = latitudeRad - latitudeInterestRad;
-            double dLong = longitudeRad - longitudeInterestRad;
-            double x = Math.pow(Math.sin(dLat / 2), 2)
-                    + Math.cos(latitudeRad) * Math.cos(latitudeInterestRad)
-                    * Math.pow(Math.sin(dLong / 2), 2);
-            double c = 2 * Math.asin(Math.sqrt(x));
 
             NumberFormat formatter = new DecimalFormat("#0.00");
-            String dist = formatter.format(EARTH_RADIUS * c);
-
+            findBearing();
+            double value;
+            String dist;
+            if((value = findDistanceToInterest(interestPoints.get(5))) <= 1){
+                dist = formatter.format(value*1000)+" mètres";
+            }else {
+                dist = formatter.format(value)+" kilomètres";
+            }
 
             NumberFormat formatter2 = new DecimalFormat("#0.00000");
             latitudeHere.post(new Runnable() {
@@ -277,7 +291,7 @@ public class Tracker extends Service implements LocationListener {
             distance.post(new Runnable() {
                 @Override
                 public void run() {
-                    distance.setText("" + dist + " kilomètres");
+                    distance.setText(dist);
                 }
             });
             Log.d("Thread findind distance","Thread has finished to update");
