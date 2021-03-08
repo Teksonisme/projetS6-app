@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.TextView;
@@ -16,13 +17,17 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 
 import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import com.example.orientation_app.Interest;
 
 //Inspiré de : https://howtodoandroid.medium.com/how-to-get-current-latitude-and-longitude-in-android-example-35437a51052a
 public class Tracker extends Service implements LocationListener {
@@ -35,13 +40,13 @@ public class Tracker extends Service implements LocationListener {
 
     volatile boolean exit = false, updateInProgress = false;
 
-    TextView latitudeHere, longitudeHere, distance, bearing;
+    TextView latitudeHere, longitudeHere, distance, bearing, nomInterest;
 
     Location location;
 
     List<Interest> interestPoints;
 
-    int EARTH_RADIUS = 6371;
+    public static int EARTH_RADIUS = 6371;
 
     public void setLocation(Location location) {
         this.location = location;
@@ -70,7 +75,7 @@ public class Tracker extends Service implements LocationListener {
 
     protected LocationManager locationManager;
 
-    Tracker(Context context, TextView lat, TextView longi, TextView distance, List<Interest> interestList, TextView bearing) {
+    Tracker(Context context, TextView lat, TextView longi, TextView distance, List<Interest> interestList, TextView bearing, TextView nomInterest) {
         this.context = context;
         this.latitudeHere = lat;
         this.longitudeHere = longi;
@@ -78,6 +83,7 @@ public class Tracker extends Service implements LocationListener {
         this.interestPoints = interestList;
         this.bearing = bearing;
         this.location = getLocation();
+        this.nomInterest = nomInterest;
     }
 
     private Location getLocation() {
@@ -93,7 +99,8 @@ public class Tracker extends Service implements LocationListener {
                 this.canGetLocation = true;
                 if (isNetworkEnabled) {
                     //check the network permission
-                    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this.context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                            ActivityCompat.checkSelfPermission(this.context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions((Activity) context, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
                     }
                     locationManager.requestLocationUpdates(
@@ -158,63 +165,53 @@ public class Tracker extends Service implements LocationListener {
         double x = Math.atan2(Math.sin(dLong) * Math.cos(latitudeInterestRad),
                 Math.cos(latitudeRad) * Math.sin(latitudeInterestRad) - Math.sin(latitudeRad) * Math.cos(latitudeInterestRad) * Math.cos(dLong));
 
-        Log.d("Bearing","" + ((Math.toDegrees(x) + 360) % 360));
+        Log.d("Bearing", "" + ((Math.toDegrees(x) + 360) % 360));
 
 
     }
-    // Work in progress
-    public String[][] findAllBearing(List<Interest> interestPoints) {
-        double latitudeRad, latitudeInterestRad, longitudeRad, longitudeInterestRad, dLong;
-        int i = 0, j = 0;
-        String[][] interestsWithBearing = null;
 
-        for (Interest interest : interestPoints) {
-            latitudeRad = Math.toRadians(latitude);
-            longitudeRad = Math.toRadians(longitude);
-            latitudeInterestRad = Math.toRadians(interest.getLatitude());
-            longitudeInterestRad = Math.toRadians(interest.getLongitude());
+    // WIP : Retourne un tab de String en deux dimensions avec la valeur inférieur
+    // étant dans la 3ème colonne
+    public String[][] createOrientationTable(List<Interest> listOfInterests) {
 
-            dLong = longitudeInterestRad - longitudeRad;
-
-            double x = Math.atan2(Math.sin(dLong) * Math.cos(latitudeInterestRad),
-                    Math.cos(latitudeRad) * Math.sin(latitudeInterestRad) - Math.sin(latitudeRad) * Math.cos(latitudeInterestRad) * Math.cos(dLong));
-
-            interestsWithBearing[i][j] = interest.getName();
-            interestsWithBearing[i][j + 1] = "" + x;
-            i++;
-        }
-        return interestsWithBearing;
-    }
-    // Work in progress
-    public String searchInterestInFront(String[][] interests, double angle) {
-        String name = "None";
+        Collections.sort(listOfInterests, new InterestBearingComparator());
+        String[][] arrayInfBearings = new String[listOfInterests.size()][3];
         int i = 0;
-        for (String[] angleCompare : interests) {
-            if (angle > 180) {
+        double medium;
+        while (i < listOfInterests.size()) {
+            if (i == 0)
+                medium = (listOfInterests.get(listOfInterests.size() - 1).getBearingFromUser()
+                        + listOfInterests.get(i).getBearingFromUser());
+            else medium = (listOfInterests.get(i - 1).getBearingFromUser()
+                    + listOfInterests.get(i).getBearingFromUser());
+
+            if (i == 0 && medium > 360) {
+                medium /= 2 - 180;
+                arrayInfBearings[i][0] = listOfInterests.get(i).getName();
+                arrayInfBearings[i][1] = "" + listOfInterests.get(i).getDistanceFromUser();
+                arrayInfBearings[i][2] = "" + medium;
+                Log.d("Medium inforior of" + i, "" + arrayInfBearings[i][2]);
+            } else if (i == 0) {
+                medium = 1;
+                arrayInfBearings[i][0] = listOfInterests.get(i).getName();
+                arrayInfBearings[i][1] = "" + listOfInterests.get(i).getDistanceFromUser();
+                arrayInfBearings[i][2] = "" + medium;
+                Log.d("Medium inforior of" + i, "" + arrayInfBearings[i][2]);
 
             } else {
-
+                medium /= 2;
+                arrayInfBearings[i][0] = listOfInterests.get(i).getName();
+                arrayInfBearings[i][1] = "" + listOfInterests.get(i).getDistanceFromUser();
+                arrayInfBearings[i][2] = "" + medium;
+                Log.d("Medium inforior of" + i, "" + arrayInfBearings[i][2]);
             }
-
-
+            i++;
         }
 
-        return name;
+        return arrayInfBearings;
     }
-    public List<InterestWithDistance> makeOrientationTable(List<Interest> listOfInterests){
+    public void checkInArray(String [][] arrayInfBearings, double angle){
 
-        List<InterestWithDistance> orientationTable = new ArrayList<>();
-        for(Interest interest : listOfInterests){
-        }
-        return null;
-    }
-
-    public double findDistanceToInterest(Interest interest){
-                double x = Math.pow(Math.sin((Math.toRadians(latitude) -  Math.toRadians(interest.getLatitude())) / 2), 2)
-                + Math.cos(Math.toRadians(latitude)) * Math.cos(Math.toRadians(interest.getLongitude()))
-                * Math.pow(Math.sin((Math.toRadians(longitude) - Math.toRadians(interest.getLongitude())) / 2), 2);
-        double c = 2 * Math.asin(Math.sqrt(x));
-        return EARTH_RADIUS * c;
     }
     @Override
     public void onLocationChanged(Location location) {
@@ -252,6 +249,7 @@ public class Tracker extends Service implements LocationListener {
 
 
     }
+
     // Work in progress
     public class DoCalculation implements Runnable {
         @Override
@@ -264,28 +262,30 @@ public class Tracker extends Service implements LocationListener {
             latitude = location.getLatitude();
             longitude = location.getLongitude();
 
-
-            NumberFormat formatter = new DecimalFormat("#0.00");
-            findBearing();
+            for (Interest interest : interestPoints) {
+                interest.findBearingFromUser(latitude, longitude);
+                interest.findDistanceFromUser(latitude, longitude);
+            }
             double value;
             String dist;
-            if((value = findDistanceToInterest(interestPoints.get(5))) <= 1){
-                dist = formatter.format(value*1000)+" mètres";
-            }else {
-                dist = formatter.format(value)+" kilomètres";
+            NumberFormat formatter = new DecimalFormat("#0.00");
+            if ((value = interestPoints.get(0).getDistanceFromUser()) <= 1) {
+                dist = formatter.format(value * 1000) + " mètres";
+            } else {
+                dist = formatter.format(value) + " kilomètres";
             }
-
+            createOrientationTable(interestPoints);
             NumberFormat formatter2 = new DecimalFormat("#0.00000");
             latitudeHere.post(new Runnable() {
                 @Override
                 public void run() {
-                    latitudeHere.setText(""+formatter2.format(location.getLatitude()));
+                    latitudeHere.setText("" + formatter2.format(location.getLatitude()));
                 }
             });
             longitudeHere.post(new Runnable() {
                 @Override
                 public void run() {
-                    longitudeHere.setText(""+formatter2.format(location.getLongitude()));
+                    longitudeHere.setText("" + formatter2.format(location.getLongitude()));
                 }
             });
             distance.post(new Runnable() {
@@ -294,7 +294,14 @@ public class Tracker extends Service implements LocationListener {
                     distance.setText(dist);
                 }
             });
-            Log.d("Thread findind distance","Thread has finished to update");
+            nomInterest.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    nomInterest.setText(interestPoints.get(4).getName());
+                }
+            });
+            Log.d("Thread findind distance", "Thread has finished to update");
             updateInProgress = false;
         }
     }

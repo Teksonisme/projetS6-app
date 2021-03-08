@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
     boolean isSyncVocalEnabled = false;
     ImageView boussoleView;
-    TextView angleNorth,latitudeHere,longitudeHere,distance,bearing;
+    TextView angleNorth,latitudeHere,longitudeHere,distance,bearing,nomInterest;
     Button updateButton;
     double latitude,longitude;
     // ** Programmer world : https://www.youtube.com/watch?v=Dqg1A4hy-jI
@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
         latitudeHere = findViewById(R.id.latitudeHere);
         longitudeHere = findViewById(R.id.longitudeHere);
         distance = findViewById(R.id.distance);
+        nomInterest = findViewById(R.id.nomInterest);
         getLocation(latitudeHere,longitudeHere);
 
         Boussole boussole = new Boussole(this,(SensorManager) getSystemService(SENSOR_SERVICE),findViewById(R.id.boussoleView),findViewById(R.id.angleText));
@@ -108,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
     public void onClickMenu(View v) {
 
     }
+    // Code from San Askaruly : https://stackoverflow.com/questions/43055661/reading-csv-file-in-android-app/50443558
     public void readInterestFile(){
         // Read the raw csv file
         InputStream is = getResources().openRawResource(R.raw.couloisy_test);
@@ -130,12 +132,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("MyActivity","Line: " + line);
                 // use comma as separator columns of CSV
                 String[] tokens = line.split(",");
-                // Read the data
-                Interest interest = new Interest();
-                interest.setName(tokens[0]);
-                interest.setLatitude(Float.parseFloat(tokens[1]));
-                interest.setLongitude(Float.parseFloat(tokens[2]));
-
+                // Read the data 0 : name, 1 : latitude, 2 : longitude, 3 : type
+                Interest interest = new Interest(tokens[0],Float.parseFloat(tokens[1]),Float.parseFloat(tokens[2]));
                 interestPoints.add(interest);
 
                 // Log the object
@@ -153,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getLocation(TextView latitudeHere, TextView longitudeHere){
-        gpsTracker = new Tracker(MainActivity.this,latitudeHere,longitudeHere,distance,interestPoints,bearing);
+        gpsTracker = new Tracker(MainActivity.this,latitudeHere,longitudeHere,distance,interestPoints,bearing,nomInterest);
     }
 
     public void searchInterestInFront(){

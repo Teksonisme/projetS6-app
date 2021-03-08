@@ -51,8 +51,8 @@
 
     <ImageView
         android:id="@+id/backRectGrey"
-        android:layout_width="0dp"
-        android:layout_height="177dp"
+        android:layout_width="408dp"
+        android:layout_height="245dp"
         android:layout_marginTop="172dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -101,26 +101,6 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/textView6"
-        android:layout_width="0dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginLeft="32dp"
-        android:layout_marginTop="228dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginRight="32dp"
-        android:fontFamily="@font/source_serif_pro"
-        android:gravity="center_horizontal"
-        android:text="@string/default_text"
-        android:textAlignment="center"
-        android:textColor="@color/rose_pale"
-        android:textSize="42sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
         android:id="@+id/textView3"
         android:layout_width="193dp"
         android:layout_height="28dp"
@@ -132,8 +112,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView6"
-        app:layout_constraintVertical_bias="0.013" />
+        app:layout_constraintTop_toBottomOf="@+id/nomInterest"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/distance"
@@ -146,8 +126,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/textView3"
-        app:layout_constraintTop_toBottomOf="@+id/textView6"
-        app:layout_constraintVertical_bias="0.013" />
+        app:layout_constraintTop_toBottomOf="@+id/nomInterest"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/latitudeHere"
@@ -245,6 +225,26 @@
         app:layout_constraintStart_toEndOf="@+id/imageView3"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.029" />
+
+    <TextView
+        android:id="@+id/nomInterest"
+        android:layout_width="340dp"
+        android:layout_height="136dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginLeft="32dp"
+        android:layout_marginTop="228dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginRight="32dp"
+        android:fontFamily="@font/source_serif_pro"
+        android:gravity="center_horizontal"
+        android:text="@string/default_text"
+        android:textAlignment="center"
+        android:textColor="@color/rose_pale"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/button"
