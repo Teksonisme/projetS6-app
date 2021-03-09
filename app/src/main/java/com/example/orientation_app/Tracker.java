@@ -45,9 +45,10 @@ public class Tracker extends Service implements LocationListener {
     Location location;
 
     List<Interest> interestPoints;
+    String[][] arrayOfInf;
 
     public static int EARTH_RADIUS = 6371;
-
+    public int arrayInfSize=0;
     public void setLocation(Location location) {
         this.location = location;
     }
@@ -84,6 +85,7 @@ public class Tracker extends Service implements LocationListener {
         this.bearing = bearing;
         this.location = getLocation();
         this.nomInterest = nomInterest;
+        getLocation();
     }
 
     private Location getLocation() {
@@ -171,7 +173,7 @@ public class Tracker extends Service implements LocationListener {
     }
 
     // WIP : Retourne un tab de String en deux dimensions avec la valeur inférieur
-    // étant dans la 3ème colonne
+    // étant dans la 3ème colonne ( 0 : name, 1 : distance, 2 : Moyenne du bearing d'avant et présent )
     public String[][] createOrientationTable(List<Interest> listOfInterests) {
 
         Collections.sort(listOfInterests, new InterestBearingComparator());
@@ -190,28 +192,45 @@ public class Tracker extends Service implements LocationListener {
                 arrayInfBearings[i][0] = listOfInterests.get(i).getName();
                 arrayInfBearings[i][1] = "" + listOfInterests.get(i).getDistanceFromUser();
                 arrayInfBearings[i][2] = "" + medium;
-                Log.d("Medium inforior of" + i, "" + arrayInfBearings[i][2]);
+                Log.d("Medium[" + i +"] "+arrayInfBearings[i][0], "" + arrayInfBearings[i][2]);
             } else if (i == 0) {
                 medium = 1;
                 arrayInfBearings[i][0] = listOfInterests.get(i).getName();
                 arrayInfBearings[i][1] = "" + listOfInterests.get(i).getDistanceFromUser();
                 arrayInfBearings[i][2] = "" + medium;
-                Log.d("Medium inforior of" + i, "" + arrayInfBearings[i][2]);
+                Log.d("Medium[" + i +"] "+arrayInfBearings[i][0], "" + arrayInfBearings[i][2]);
 
             } else {
                 medium /= 2;
                 arrayInfBearings[i][0] = listOfInterests.get(i).getName();
                 arrayInfBearings[i][1] = "" + listOfInterests.get(i).getDistanceFromUser();
                 arrayInfBearings[i][2] = "" + medium;
-                Log.d("Medium inforior of" + i, "" + arrayInfBearings[i][2]);
+                Log.d("Medium[" + i +"] "+arrayInfBearings[i][0], "" + arrayInfBearings[i][2]);
             }
             i++;
         }
-
+        this.arrayInfSize = listOfInterests.size();
         return arrayInfBearings;
     }
     public void checkInArray(String [][] arrayInfBearings, double angle){
+        for(int i = 0; i < arrayInfSize; i++){
+            if(Double.parseDouble(arrayInfBearings[i][2]) <= angle && Double.parseDouble(arrayInfBearings[i+1][2]) > angle){
+                int finalI = i;
+                distance.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        distance.setText(""+(float)Math.round(Double.parseDouble(arrayInfBearings[finalI][1])*1000)/1000 + " kilomètres ");
+                    }
+                });
 
+                nomInterest.post(new Runnable(){
+                    @Override
+                    public void run() {
+                        nomInterest.setText(""+arrayInfBearings[finalI][0]);
+                    }
+                });
+            }
+        }
     }
     @Override
     public void onLocationChanged(Location location) {
@@ -274,7 +293,10 @@ public class Tracker extends Service implements LocationListener {
             } else {
                 dist = formatter.format(value) + " kilomètres";
             }
-            createOrientationTable(interestPoints);
+
+            arrayOfInf = createOrientationTable(interestPoints);
+            checkInArray(arrayOfInf,86.0f);
+
             NumberFormat formatter2 = new DecimalFormat("#0.00000");
             latitudeHere.post(new Runnable() {
                 @Override
@@ -288,19 +310,7 @@ public class Tracker extends Service implements LocationListener {
                     longitudeHere.setText("" + formatter2.format(location.getLongitude()));
                 }
             });
-            distance.post(new Runnable() {
-                @Override
-                public void run() {
-                    distance.setText(dist);
-                }
-            });
-            nomInterest.post(new Runnable() {
 
-                @Override
-                public void run() {
-                    nomInterest.setText(interestPoints.get(4).getName());
-                }
-            });
             Log.d("Thread findind distance", "Thread has finished to update");
             updateInProgress = false;
         }

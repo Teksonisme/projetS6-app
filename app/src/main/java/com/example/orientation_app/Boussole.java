@@ -1,89 +1,82 @@
 package com.example.orientation_app;
 
-import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class Boussole {
+// Inspired of : https://www.youtube.com/watch?v=RcqXFxqIAW4
+public class Boussole implements SensorEventListener {
 
-    // ** Programmer world : https://www.youtube.com/watch?v=Dqg1A4hy-jI
-    private SensorManager sensorManager;
-    private Sensor sensorAccelerometer;
-    private Sensor sensorMagneticField;
+    private ImageView boussoleView;
+    private TextView angleToNorth;
 
-    ImageView boussoleView;
-    TextView angleToNorth;
+    private float[] mGravity = new float[3];
+    private float[] mGeomagnetic = new float[3];
+    private float[] mRotationMatrix = new float[9];
+    private float[] mOrientation = new float[9];
 
-    private float[] floatGravity = new float[3];
-    private float[] floatGeoMagnetic = new float[3];
+    private float azimuth = 0f;
+    private float correctAzimuth = 0f;
+    private SensorManager mSensorManager;
 
-    private float[] floatOrientation = new float[3];
-    private float[] floatRotationMatrix = new float[9];
+    //Used to reduce noise of motion sensors ( filter )
+    private final float alpha = 0.99f;
 
-    double angleNorth360,lastValue = -1;
-
-    Context context;
-
-    Boussole(Context context, SensorManager sensorManager, ImageView boussoleView, TextView angleToNorth) {
-        this.context = context;
-        this.sensorManager = sensorManager;
+    Boussole(SensorManager sensorM, ImageView boussoleView, TextView angleToNorth){
+        this.mSensorManager = sensorM;
         this.boussoleView = boussoleView;
         this.angleToNorth = angleToNorth;
+
+        mSensorManager.registerListener(this,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+                SensorManager.SENSOR_DELAY_NORMAL);
     }
 
-    public void boussoleStart() {
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        synchronized(this){
+            if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
+                mGravity[0] = alpha*mGravity[0]+(1-alpha)*event.values[0];
+                mGravity[1] = alpha*mGravity[1]+(1-alpha)*event.values[1];
+                mGravity[2] = alpha*mGravity[2]+(1-alpha)*event.values[2];
+            }
+            if(event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD){
+                mGeomagnetic[0] = alpha*mGeomagnetic[0]+(1-alpha)*event.values[0];
+                mGeomagnetic[1] = alpha*mGeomagnetic[1]+(1-alpha)*event.values[1];
+                mGeomagnetic[2] = alpha*mGeomagnetic[2]+(1-alpha)*event.values[2];
+            }
+            boolean success = SensorManager.getRotationMatrix(mRotationMatrix,mOrientation,mGravity,mGeomagnetic);
+            if(success){
+                float[] orientation = new float[3];
+                SensorManager.getOrientation(mRotationMatrix,orientation);
+                azimuth = (float)Math.toDegrees(orientation[0]);
+                azimuth = (azimuth + 360)%360;
 
-        sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorMagneticField = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+                Animation anim = new RotateAnimation(-correctAzimuth, -azimuth,Animation.RELATIVE_TO_SELF,0.5f,Animation.RELATIVE_TO_SELF,0.5f);
+                correctAzimuth = azimuth;
 
-        SensorEventListener sensorEventListenerAccelerometer = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                floatGravity = event.values;
+                anim.setDuration(100);
+                anim.setRepeatCount(0);
+                anim.setFillAfter(true);
 
-                SensorManager.getRotationMatrix(floatRotationMatrix, null, floatGravity, floatGeoMagnetic);
-                SensorManager.getOrientation(floatRotationMatrix, floatOrientation);
-
-                angleNorth360 = ((Math.toDegrees(floatOrientation[0]) + 360)) % 360;
-
-
-                lastValue = angleNorth360;
-                boussoleView.setRotation((float) (-floatOrientation[0] * 180 / 3.14159));
-                angleToNorth.setText("" + angleNorth360 + "°");
+                boussoleView.startAnimation(anim);
+                angleToNorth.setText(""+azimuth);
+            }
 
         }
 
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
-            }
-        };
+    }
 
-        SensorEventListener sensorEventListenerMagneticField = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                floatGeoMagnetic = event.values;
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
-                SensorManager.getRotationMatrix(floatRotationMatrix, null, floatGravity, floatGeoMagnetic);
-                SensorManager.getOrientation(floatRotationMatrix, floatOrientation);
-
-                angleNorth360 = ((Math.toDegrees(floatOrientation[0]) + 360)) % 360;
-
-
-                    lastValue = angleNorth360;
-                    boussoleView.setRotation((float) (-floatOrientation[0] * 180 / 3.14159));
-                    angleToNorth.setText("" + angleNorth360 + "°");
-
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
-            }
-        };
-        sensorManager.registerListener(sensorEventListenerAccelerometer, sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(sensorEventListenerMagneticField, sensorMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
     }
 }

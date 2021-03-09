@@ -36,9 +36,9 @@ public class MainActivity extends AppCompatActivity {
     Button updateButton;
     double latitude,longitude;
     // ** Programmer world : https://www.youtube.com/watch?v=Dqg1A4hy-jI
+
     private SensorManager sensorManager;
-    private Sensor sensorAccelerometer;
-    private Sensor sensorMagneticField;
+
 
     private Tracker gpsTracker;
 
@@ -56,23 +56,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        setUpViews();
         readInterestFile();
-        updateButton = findViewById(R.id.button);
         updateButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 updateAll();
             }
         });
-        latitudeHere = findViewById(R.id.latitudeHere);
-        longitudeHere = findViewById(R.id.longitudeHere);
-        distance = findViewById(R.id.distance);
-        nomInterest = findViewById(R.id.nomInterest);
-        getLocation(latitudeHere,longitudeHere);
 
-        Boussole boussole = new Boussole(this,(SensorManager) getSystemService(SENSOR_SERVICE),findViewById(R.id.boussoleView),findViewById(R.id.angleText));
-        boussole.boussoleStart();
+        getLocation(latitudeHere,longitudeHere);
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        //Boussole boussole = new Boussole(this,sensorManager,findViewById(R.id.boussoleView),findViewById(R.id.angleText));
+        //boussole.boussoleStart();
+
+
         updateAll();
+        Boussole boussole = new Boussole(sensorManager,boussoleView,angleNorth);
     }
 
     private void updateAll() {
@@ -153,7 +153,15 @@ public class MainActivity extends AppCompatActivity {
     public void getLocation(TextView latitudeHere, TextView longitudeHere){
         gpsTracker = new Tracker(MainActivity.this,latitudeHere,longitudeHere,distance,interestPoints,bearing,nomInterest);
     }
-
+    public void setUpViews(){
+        latitudeHere = findViewById(R.id.latitudeHere);
+        longitudeHere = findViewById(R.id.longitudeHere);
+        distance = findViewById(R.id.distance);
+        nomInterest = findViewById(R.id.nomInterest);
+        updateButton = findViewById(R.id.button);
+        boussoleView = findViewById(R.id.boussoleView);
+        angleNorth = findViewById(R.id.angleText);
+    }
     public void searchInterestInFront(){
 
     }
