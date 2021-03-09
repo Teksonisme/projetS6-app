@@ -20,7 +20,11 @@ public class Boussole implements SensorEventListener {
     private float[] mRotationMatrix = new float[9];
     private float[] mOrientation = new float[9];
 
-    private float azimuth = 0f;
+    public float getAzimuth() {
+        return azimuth;
+    }
+
+    private float azimuth = 2f;
     private float correctAzimuth = 0f;
     private SensorManager mSensorManager;
 

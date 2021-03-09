@@ -41,14 +41,15 @@ public class Tracker extends Service implements LocationListener {
     volatile boolean exit = false, updateInProgress = false;
 
     TextView latitudeHere, longitudeHere, distance, bearing, nomInterest;
-
+    Boussole boussole;
     Location location;
 
     List<Interest> interestPoints;
     String[][] arrayOfInf;
 
     public static int EARTH_RADIUS = 6371;
-    public int arrayInfSize=0;
+    public int arrayInfSize = 0;
+
     public void setLocation(Location location) {
         this.location = location;
     }
@@ -76,7 +77,7 @@ public class Tracker extends Service implements LocationListener {
 
     protected LocationManager locationManager;
 
-    Tracker(Context context, TextView lat, TextView longi, TextView distance, List<Interest> interestList, TextView bearing, TextView nomInterest) {
+    Tracker(Context context, TextView lat, TextView longi, TextView distance, List<Interest> interestList, TextView bearing, TextView nomInterest, Boussole boussole) {
         this.context = context;
         this.latitudeHere = lat;
         this.longitudeHere = longi;
@@ -85,6 +86,7 @@ public class Tracker extends Service implements LocationListener {
         this.bearing = bearing;
         this.location = getLocation();
         this.nomInterest = nomInterest;
+        this.boussole = boussole;
         getLocation();
     }
 
@@ -192,46 +194,66 @@ public class Tracker extends Service implements LocationListener {
                 arrayInfBearings[i][0] = listOfInterests.get(i).getName();
                 arrayInfBearings[i][1] = "" + listOfInterests.get(i).getDistanceFromUser();
                 arrayInfBearings[i][2] = "" + medium;
-                Log.d("Medium[" + i +"] "+arrayInfBearings[i][0], "" + arrayInfBearings[i][2]);
+                Log.d("Medium[" + i + "] " + arrayInfBearings[i][0], "" + arrayInfBearings[i][2]);
             } else if (i == 0) {
                 medium = 1;
                 arrayInfBearings[i][0] = listOfInterests.get(i).getName();
                 arrayInfBearings[i][1] = "" + listOfInterests.get(i).getDistanceFromUser();
                 arrayInfBearings[i][2] = "" + medium;
-                Log.d("Medium[" + i +"] "+arrayInfBearings[i][0], "" + arrayInfBearings[i][2]);
+                Log.d("Medium[" + i + "] " + arrayInfBearings[i][0], "" + arrayInfBearings[i][2]);
 
             } else {
                 medium /= 2;
                 arrayInfBearings[i][0] = listOfInterests.get(i).getName();
                 arrayInfBearings[i][1] = "" + listOfInterests.get(i).getDistanceFromUser();
                 arrayInfBearings[i][2] = "" + medium;
-                Log.d("Medium[" + i +"] "+arrayInfBearings[i][0], "" + arrayInfBearings[i][2]);
+                Log.d("Medium[" + i + "] " + arrayInfBearings[i][0], "" + arrayInfBearings[i][2]);
             }
             i++;
         }
         this.arrayInfSize = listOfInterests.size();
         return arrayInfBearings;
     }
-    public void checkInArray(String [][] arrayInfBearings, double angle){
-        for(int i = 0; i < arrayInfSize; i++){
-            if(Double.parseDouble(arrayInfBearings[i][2]) <= angle && Double.parseDouble(arrayInfBearings[i+1][2]) > angle){
+
+    public void checkInArray(String[][] arrayInfBearings, double angle) {
+        for (int i = 0; i < arrayInfSize; i++) {
+
+            if (i == arrayInfSize - 1) {
                 int finalI = i;
                 distance.post(new Runnable() {
                     @Override
                     public void run() {
-                        distance.setText(""+(float)Math.round(Double.parseDouble(arrayInfBearings[finalI][1])*1000)/1000 + " kilomètres ");
+                        distance.setText("" + (float) Math.round(Double.parseDouble(arrayInfBearings[finalI][1]) * 1000) / 1000 + " kilomètres ");
                     }
                 });
 
-                nomInterest.post(new Runnable(){
+                nomInterest.post(new Runnable() {
                     @Override
                     public void run() {
-                        nomInterest.setText(""+arrayInfBearings[finalI][0]);
+                        nomInterest.setText("" + arrayInfBearings[finalI][0]);
                     }
                 });
+                break;
+            } else if (Double.parseDouble(arrayInfBearings[i][2]) <= angle && Double.parseDouble(arrayInfBearings[i + 1][2]) > angle) {
+                int finalI = i;
+                distance.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        distance.setText("" + (float) Math.round(Double.parseDouble(arrayInfBearings[finalI][1]) * 1000) / 1000 + " kilomètres ");
+                    }
+                });
+
+                nomInterest.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        nomInterest.setText("" + arrayInfBearings[finalI][0]);
+                    }
+                });
+                break;
             }
         }
     }
+
     @Override
     public void onLocationChanged(Location location) {
     }
@@ -295,7 +317,7 @@ public class Tracker extends Service implements LocationListener {
             }
 
             arrayOfInf = createOrientationTable(interestPoints);
-            checkInArray(arrayOfInf,86.0f);
+            checkInArray(arrayOfInf, boussole.getAzimuth());
 
             NumberFormat formatter2 = new DecimalFormat("#0.00000");
             latitudeHere.post(new Runnable() {

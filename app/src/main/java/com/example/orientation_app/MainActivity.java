@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
 
     private List<Interest> interestPoints = new ArrayList<>();
 
+    Boussole boussole;
+
     // ** Programmer world
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,14 +67,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        getLocation(latitudeHere,longitudeHere);
+
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         //Boussole boussole = new Boussole(this,sensorManager,findViewById(R.id.boussoleView),findViewById(R.id.angleText));
         //boussole.boussoleStart();
 
-
+        boussole = new Boussole(sensorManager,boussoleView,angleNorth);
+        getLocation(latitudeHere,longitudeHere);
         updateAll();
-        Boussole boussole = new Boussole(sensorManager,boussoleView,angleNorth);
+
     }
 
     private void updateAll() {
@@ -151,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getLocation(TextView latitudeHere, TextView longitudeHere){
-        gpsTracker = new Tracker(MainActivity.this,latitudeHere,longitudeHere,distance,interestPoints,bearing,nomInterest);
+        gpsTracker = new Tracker(MainActivity.this,latitudeHere,longitudeHere,distance,interestPoints,bearing,nomInterest,boussole);
     }
     public void setUpViews(){
         latitudeHere = findViewById(R.id.latitudeHere);
