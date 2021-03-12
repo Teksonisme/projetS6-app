@@ -29,19 +29,14 @@ public class Boussole implements SensorEventListener {
     private SensorManager mSensorManager;
 
     //Used to reduce noise of motion sensors ( filter )
-    private final float alpha = 0.99f;
+    private final float alpha = 0.97f;
 
     Boussole(SensorManager sensorM, ImageView boussoleView, TextView angleToNorth){
         this.mSensorManager = sensorM;
         this.boussoleView = boussoleView;
         this.angleToNorth = angleToNorth;
 
-        mSensorManager.registerListener(this,
-                mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                SensorManager.SENSOR_DELAY_NORMAL);
-        mSensorManager.registerListener(this,
-                mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
-                SensorManager.SENSOR_DELAY_NORMAL);
+        start();
     }
 
     @Override
@@ -72,11 +67,22 @@ public class Boussole implements SensorEventListener {
                 anim.setFillAfter(true);
 
                 boussoleView.startAnimation(anim);
-                angleToNorth.setText(""+azimuth);
+                angleToNorth.setText(""+Math.round(azimuth)+"°");
+
             }
-
         }
+    }
 
+    public void pause(){
+        mSensorManager.unregisterListener(this);
+    }
+    public void start(){
+        mSensorManager.registerListener(this,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+                SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override

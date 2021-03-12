@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView boussoleView;
     TextView angleNorth,latitudeHere,longitudeHere,distance,bearing,nomInterest;
     Button updateButton;
-    double latitude,longitude;
+
     // ** Programmer world : https://www.youtube.com/watch?v=Dqg1A4hy-jI
 
     private SensorManager sensorManager;
@@ -91,6 +91,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        boussole.start();
+    }
+    public void onPause() {
+        super.onPause();
+        boussole.pause();
+    }
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.param:
@@ -104,14 +113,11 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-
+    //Change the activity to Param Intent
     public void goToParam() {
         startActivity(new Intent(MainActivity.this, MenuActivity.class));
     }
 
-    public void onClickMenu(View v) {
-
-    }
     // Code from San Askaruly : https://stackoverflow.com/questions/43055661/reading-csv-file-in-android-app/50443558
     public void readInterestFile(){
         // Read the raw csv file
@@ -136,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
                 // use comma as separator columns of CSV
                 String[] tokens = line.split(",");
                 // Read the data 0 : name, 1 : latitude, 2 : longitude, 3 : type
-                Interest interest = new Interest(tokens[0],Float.parseFloat(tokens[1]),Float.parseFloat(tokens[2]));
+                Interest interest = new Interest(tokens[0],Float.parseFloat(tokens[1]),Float.parseFloat(tokens[2]),tokens[3]);
                 interestPoints.add(interest);
 
                 // Log the object

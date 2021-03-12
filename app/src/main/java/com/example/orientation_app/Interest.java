@@ -15,18 +15,11 @@ public class Interest {
     private double bearingFromUser = 0;
 
 
-    Interest(String name, float latitude, float longitude){
+    Interest(String name, float latitude, float longitude, String type){
         this.latitude = latitude;
         this.longitude = longitude;
         this.name = name;
-        this.type = null;
-    }
-    public float getLatitude() {
-        return latitude;
-    }
-
-    public float getLongitude() {
-        return longitude;
+        this.type = type;
     }
 
     public String getName() {
