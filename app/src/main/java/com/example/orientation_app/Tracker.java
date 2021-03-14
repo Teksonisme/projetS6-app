@@ -44,6 +44,7 @@ public class Tracker extends Service implements LocationListener {
     Boussole boussole;
     Location location;
 
+    public double angleOfResearch = 5.;
     List<Interest> interestPoints;
     String[][] arrayOfInf;
 
@@ -68,7 +69,7 @@ public class Tracker extends Service implements LocationListener {
         this.location = getLocation();
         this.nomInterest = nomInterest;
         this.boussole = boussole;
-        getLocation();
+        //getLocation();
     }
 
     private Location getLocation() {
@@ -89,7 +90,7 @@ public class Tracker extends Service implements LocationListener {
                         ActivityCompat.requestPermissions((Activity) context, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
                     }
                     locationManager.requestLocationUpdates(
-                            LocationManager.GPS_PROVIDER,
+                            LocationManager.NETWORK_PROVIDER,
                             TEMPS_MINI_UPDATE,
                             DISTANCE_MINIMUM_UPDATE, this);
 
@@ -131,6 +132,10 @@ public class Tracker extends Service implements LocationListener {
     public String[][] createOrientationTable(List<Interest> listOfInterests) {
 
         Collections.sort(listOfInterests, new InterestBearingComparator());
+        for (Interest interest : listOfInterests) {
+            Log.d("Bearing of", "" + interest.getName() + " bearing : " + interest.getBearingFromUser());
+        }
+        arrangeTheArray(listOfInterests);
         String[][] arrayInfBearings = new String[listOfInterests.size()][3];
         int i = 0;
         double medium;
@@ -148,7 +153,7 @@ public class Tracker extends Service implements LocationListener {
                 arrayInfBearings[i][2] = "" + medium;
                 Log.d("Medium[" + i + "] " + arrayInfBearings[i][0], "" + arrayInfBearings[i][2]);
             } else if (i == 0) {
-                medium = 1;
+                medium = 13;
                 arrayInfBearings[i][0] = listOfInterests.get(i).getName();
                 arrayInfBearings[i][1] = "" + listOfInterests.get(i).getDistanceFromUser();
                 arrayInfBearings[i][2] = "" + medium;
@@ -167,6 +172,38 @@ public class Tracker extends Service implements LocationListener {
         return arrayInfBearings;
     }
 
+    public void arrangeTheArray(List<Interest> listOfInterests) {
+        List<Integer> interestToRemove = new ArrayList<>();
+
+        for (int i = 0; i < listOfInterests.size(); i++) {
+            if (i == 0) {
+                //Remove if there is less than the angle of Research available between the bearings of two interests encapsulating the first interest
+                if (((360 - listOfInterests.get(listOfInterests.size() - 1).getBearingFromUser() + listOfInterests.get(i).getBearingFromUser()) <= angleOfResearch) &&
+                        ((listOfInterests.get(i + 1).getBearingFromUser() - listOfInterests.get(i).getBearingFromUser()) <= angleOfResearch)) {
+                    Log.d("Remove[" + i + "] " + listOfInterests.get(i).getName(), "Bearing value" + listOfInterests.get(i).getBearingFromUser());
+                    listOfInterests.remove(i);
+                }
+            } else {
+                if (i == listOfInterests.size() - 1) {
+                    if (((listOfInterests.get(i).getBearingFromUser() - listOfInterests.get(i - 1).getBearingFromUser()) <= angleOfResearch) &&
+                            ((360 - listOfInterests.get(i).getBearingFromUser() + listOfInterests.get(0).getBearingFromUser()) <= angleOfResearch)) {
+
+                        Log.d("Remove[" + i + "] " + listOfInterests.get(i).getName(), "Bearing value" + listOfInterests.get(i).getBearingFromUser());
+                        listOfInterests.remove(i);
+                    }
+                } else {
+                    if (((listOfInterests.get(i).getBearingFromUser() - listOfInterests.get(i - 1).getBearingFromUser()) <= angleOfResearch) &&
+                            ((listOfInterests.get(i + 1).getBearingFromUser() - listOfInterests.get(i).getBearingFromUser()) <= angleOfResearch)) {
+                        Log.d("Remove[" + i + "] " + listOfInterests.get(i).getName(), "Bearing value" + listOfInterests.get(i).getBearingFromUser());
+                        listOfInterests.remove(i);
+                    }
+                }
+            }
+        }
+
+
+    }
+
     public void checkInArray(String[][] arrayInfBearings, double angle) {
         for (int i = 0; i < arrayInfSize; i++) {
 
@@ -178,7 +215,6 @@ public class Tracker extends Service implements LocationListener {
                         distance.setText("" + (float) Math.round(Double.parseDouble(arrayInfBearings[finalI][1]) * 1000) / 1000 + " kilomètres ");
                     }
                 });
-
                 nomInterest.post(new Runnable() {
                     @Override
                     public void run() {
@@ -194,7 +230,6 @@ public class Tracker extends Service implements LocationListener {
                         distance.setText("" + (float) Math.round(Double.parseDouble(arrayInfBearings[finalI][1]) * 1000) / 1000 + " kilomètres ");
                     }
                 });
-
                 nomInterest.post(new Runnable() {
                     @Override
                     public void run() {
@@ -268,7 +303,6 @@ public class Tracker extends Service implements LocationListener {
                 interest.findBearingFromUser(latitude, longitude);
                 interest.findDistanceFromUser(latitude, longitude);
             }
-
             arrayOfInf = createOrientationTable(interestPoints);
 
             NumberFormat formatter2 = new DecimalFormat("#0.00000");
