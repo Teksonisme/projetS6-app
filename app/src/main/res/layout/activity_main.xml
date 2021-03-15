@@ -34,12 +34,10 @@
 
     <ImageView
         android:id="@+id/backRectBlue"
-        android:layout_width="217dp"
+        android:layout_width="200dp"
         android:layout_height="105dp"
         android:layout_marginTop="600dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0"
@@ -61,8 +59,6 @@
         android:layout_width="195dp"
         android:layout_height="138dp"
         android:layout_marginTop="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.006"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/logo_application_toon" />
@@ -86,9 +82,11 @@
         android:id="@+id/angleText2"
         android:layout_width="48dp"
         android:layout_height="25dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginLeft="40dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginLeft="28dp"
         android:layout_marginTop="41dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
         android:layout_marginBottom="188dp"
         android:fontFamily="@font/source_serif_pro"
         android:text="Angle :"
@@ -194,12 +192,8 @@
 
     <TextView
         android:id="@+id/syntheseVocale"
-        android:layout_width="165dp"
-        android:layout_height="67dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginLeft="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginRight="32dp"
+        android:layout_width="132dp"
+        android:layout_height="84dp"
         android:layout_marginBottom="16dp"
         android:fontFamily="@font/source_serif_pro"
         android:gravity="center_horizontal|center_vertical"
@@ -207,11 +201,11 @@
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.542"
+        app:layout_constraintHorizontal_bias="0.338"
         app:layout_constraintStart_toEndOf="@+id/backRectBlue" />
 
     <TextView
-        android:id="@+id/syntheseVocale2"
+        android:id="@+id/localisationCheckText"
         android:layout_width="165dp"
         android:layout_height="67dp"
         android:layout_marginTop="20dp"

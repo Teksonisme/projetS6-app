@@ -1,85 +1,70 @@
 package com.example.orientation_app;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
+import android.speech.tts.TextToSpeech;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    boolean isSyncVocalEnabled = false;
     ImageView boussoleView;
-    TextView angleNorth,latitudeHere,longitudeHere,distance,bearing,nomInterest;
+    TextView angleNorth, latitudeHere, longitudeHere, distance, nomInterest, localisationText;
     Button updateButton;
+
+    TextToSpeech t1;
 
     // ** Programmer world : https://www.youtube.com/watch?v=Dqg1A4hy-jI
 
-    private SensorManager sensorManager;
-
 
     private Tracker gpsTracker;
-
-    private float[] floatGravity = new float[3];
-    private float[] floatGeoMagnetic = new float[3];
-
-    private float[] floatOrientation = new float[3];
-    private float[] floatRotationMatrix = new float[9];
+    private ManagerApp manager;
 
     private List<Interest> interestPoints = new ArrayList<>();
-
+    private final List<TextView> listTextViews = new ArrayList<>();
     Boussole boussole;
 
     // ** Programmer world
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         setUpViews();
-        readInterestFile();
-        updateButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                updateAll();
-            }
-        });
+        updateButton.setOnClickListener(v -> manager.notifyResetLocation());
 
+        SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        boussole = new Boussole(sensorManager, boussoleView, angleNorth);
 
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        //Boussole boussole = new Boussole(this,sensorManager,findViewById(R.id.boussoleView),findViewById(R.id.angleText));
-        //boussole.boussoleStart();
+        gpsTracker = new Tracker(this, localisationText);
 
-        boussole = new Boussole(sensorManager,boussoleView,angleNorth);
-        getLocation(latitudeHere,longitudeHere);
-        updateAll();
+        manager = new ManagerApp(this, boussole, gpsTracker, listTextViews);
+        manager.readInterestFile(CSVEnum.COULOISY);
+        interestPoints = manager.listOfInterests;
+        gpsTracker.interestPoints = interestPoints;
+
+        start();
 
     }
 
-    private void updateAll() {
-        gpsTracker.updateHere(latitudeHere,longitudeHere,distance);
+    private void start() {
+        manager.start();
     }
 
     // ** Programmer world
@@ -93,85 +78,61 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        boussole.start();
+        try {
+            boussole.start();
+            manager.unmuteTTS();
+        } catch (NullPointerException npe) {
+
+        }
+
     }
+
     public void onPause() {
         super.onPause();
-        boussole.pause();
-    }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.param:
-                //fonction ici pour changer les paramètres
-                goToParam();
-                return true;
-            case R.id.access:
-                isSyncVocalEnabled = !isSyncVocalEnabled;
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        try {
+            boussole.pause();
+            manager.muteTTS();
+        } catch (NullPointerException npe) {
+
         }
     }
+
+    public void onDestroy() {
+        super.onDestroy();
+        manager.cleanup();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //fonction ici pour changer les paramètres
+        if (item.getItemId() == R.id.param) {
+            goToParam();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     //Change the activity to Param Intent
     public void goToParam() {
         startActivity(new Intent(MainActivity.this, MenuActivity.class));
     }
 
-    // Code from San Askaruly : https://stackoverflow.com/questions/43055661/reading-csv-file-in-android-app/50443558
-    public void readInterestFile(){
-        // Read the raw csv file
-        InputStream is = getResources().openRawResource(R.raw.couloisy_test);
-
-        // Reads text from character-input stream, buffering characters for efficient reading
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(is, Charset.forName("UTF-8"))
-        );
-
-        // Initialization
-        String line = "";
-
-        // Initialization
-        try {
-            // Step over headers
-            reader.readLine();
-
-            // If buffer is not empty
-            while ((line = reader.readLine()) != null) {
-                Log.d("MyActivity","Line: " + line);
-                // use comma as separator columns of CSV
-                String[] tokens = line.split(",");
-                // Read the data 0 : name, 1 : latitude, 2 : longitude, 3 : type
-                Interest interest = new Interest(tokens[0],Float.parseFloat(tokens[1]),Float.parseFloat(tokens[2]),tokens[3]);
-                interestPoints.add(interest);
-
-                // Log the object
-                Log.d("My Activity", "Just created: " + interest);
-            }
-            reader.close();
-            is.close();
-
-        } catch (IOException e) {
-            // Logs error with priority level
-            Log.wtf("MyActivity", "Error reading data file on line" + line, e);
-            // Prints throwable details
-            e.printStackTrace();
-        }
-    }
-
-    public void getLocation(TextView latitudeHere, TextView longitudeHere){
-        gpsTracker = new Tracker(MainActivity.this,latitudeHere,longitudeHere,distance,interestPoints,bearing,nomInterest,boussole);
-    }
-    public void setUpViews(){
-        latitudeHere = findViewById(R.id.latitudeHere);
-        longitudeHere = findViewById(R.id.longitudeHere);
-        distance = findViewById(R.id.distance);
-        nomInterest = findViewById(R.id.nomInterest);
-        updateButton = findViewById(R.id.button);
+    public void setUpViews() {
+        //boussole related
         boussoleView = findViewById(R.id.boussoleView);
         angleNorth = findViewById(R.id.angleText);
-    }
-    public void searchInterestInFront(){
+
+        //location related
+        listTextViews.add(latitudeHere = findViewById(R.id.latitudeHere));
+        listTextViews.add(longitudeHere = findViewById(R.id.longitudeHere));
+        listTextViews.add(distance = findViewById(R.id.distance));
+        listTextViews.add(nomInterest = findViewById(R.id.nomInterest));
+        listTextViews.add(updateButton = findViewById(R.id.button));
+        listTextViews.add(localisationText = findViewById((R.id.localisationCheckText)));
+
+
+        //UI related
+
 
     }
 }

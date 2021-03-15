@@ -7,9 +7,6 @@
         android:id="@+id/param"
         android:title="Paramètres" />
     <item
-        android:id="@+id/access"
-        android:title="Accessibilité" />
-    <item
         android:id="@+id/home"
         android:title="Home" />
 </menu>

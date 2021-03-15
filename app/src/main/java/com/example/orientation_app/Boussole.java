@@ -12,13 +12,13 @@ import android.widget.TextView;
 // Inspired of : https://www.youtube.com/watch?v=RcqXFxqIAW4
 public class Boussole implements SensorEventListener {
 
-    private ImageView boussoleView;
-    private TextView angleToNorth;
+    private final ImageView boussoleView;
+    private final TextView angleToNorth;
 
-    private float[] mGravity = new float[3];
-    private float[] mGeomagnetic = new float[3];
-    private float[] mRotationMatrix = new float[9];
-    private float[] mOrientation = new float[9];
+    private final float[] mGravity = new float[3];
+    private final float[] mGeomagnetic = new float[3];
+    private final float[] mRotationMatrix = new float[9];
+    private final float[] mOrientation = new float[9];
 
     public float getAzimuth() {
         return azimuth;
@@ -26,10 +26,10 @@ public class Boussole implements SensorEventListener {
 
     private float azimuth = 2f;
     private float correctAzimuth = 0f;
-    private SensorManager mSensorManager;
+    private final SensorManager mSensorManager;
 
     //Used to reduce noise of motion sensors ( filter )
-    private final float alpha = 0.97f;
+    private final float alpha = 0.965f;
 
     Boussole(SensorManager sensorM, ImageView boussoleView, TextView angleToNorth){
         this.mSensorManager = sensorM;
@@ -62,9 +62,9 @@ public class Boussole implements SensorEventListener {
                 Animation anim = new RotateAnimation(-correctAzimuth, -azimuth,Animation.RELATIVE_TO_SELF,0.5f,Animation.RELATIVE_TO_SELF,0.5f);
                 correctAzimuth = azimuth;
 
-                anim.setDuration(100);
+                anim.setDuration(20);
                 anim.setRepeatCount(0);
-                anim.setFillAfter(true);
+                anim.setFillAfter(false);
 
                 boussoleView.startAnimation(anim);
                 angleToNorth.setText(""+Math.round(azimuth)+"°");
