@@ -1,13 +1,8 @@
 package com.example.orientation_app;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.speech.tts.TextToSpeech;
@@ -16,8 +11,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,7 +21,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -37,12 +29,12 @@ public class ManagerApp {
     private TextView latitudeHereText, longitudeHereText, distanceFromHereText, nomInterestText;
 
     public TextToSpeech tts;
-    private Context context;
-    private Boussole boussole;
-    private Tracker tracker;
-    private Handler handlerOfToasts;
+    private final Context context;
+    private final Boussole boussole;
+    private final Tracker tracker;
+    private final Handler handlerOfToasts;
 
-    private String lastTtsSaid;
+    private String lastTtsSaid = "";
     public List<Interest> listOfInterests;
     private String[][] mediumBearingInterests;
     private int arrayInfSize = 0;
@@ -193,47 +185,35 @@ public class ManagerApp {
             for (int i = 0; i < arrayInfSize; i++) {
                 if (i == arrayInfSize - 1) {
                     int finalI = i;
-                    distanceFromHereText.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            float value = (float) Math.round(Double.parseDouble(arrayInfBearings[finalI][1]) * 1000) / 1000;
-                            String distance =  value + " kilomètres ";
-                            distanceFromHereText.setText(distance);
-                        }
+                    distanceFromHereText.post(() -> {
+                        float value = (float) Math.round(Double.parseDouble(arrayInfBearings[finalI][1]) * 1000) / 1000;
+                        String distance =  value + " kilomètres ";
+                        distanceFromHereText.setText(distance);
                     });
-                    nomInterestText.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            String nomInterest = arrayInfBearings[finalI][0];
-                            nomInterestText.setText(nomInterest);
-                            if(lastTtsSaid != nomInterest && !isTtsMuted){
-                                tts.speak(nomInterest,TextToSpeech.QUEUE_FLUSH,null);
-                            }
-                            lastTtsSaid = nomInterest;
+                    nomInterestText.post(() -> {
+                        String nomInterest = arrayInfBearings[finalI][0];
+                        nomInterestText.setText(nomInterest);
+                        if(!lastTtsSaid.equals(nomInterest) && !isTtsMuted){
+                            tts.speak(nomInterest,TextToSpeech.QUEUE_FLUSH,null);
                         }
+                        lastTtsSaid = nomInterest;
                     });
                     break;
                 } else if (Double.parseDouble(arrayInfBearings[i][2]) <= angle && Double.parseDouble(arrayInfBearings[i + 1][2]) > angle) {
                     int finalI = i;
-                    distanceFromHereText.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            float value = (float) Math.round(Double.parseDouble(arrayInfBearings[finalI][1]) * 1000) / 1000;
-                            String distance =  value + " kilomètres ";
-                            distanceFromHereText.setText(distance);
-                        }
+                    distanceFromHereText.post(() -> {
+                        float value = (float) Math.round(Double.parseDouble(arrayInfBearings[finalI][1]) * 1000) / 1000;
+                        String distance =  value + " kilomètres ";
+                        distanceFromHereText.setText(distance);
                     });
-                    nomInterestText.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            String nomInterest = arrayInfBearings[finalI][0];
-                            nomInterestText.setText(nomInterest);
+                    nomInterestText.post(() -> {
+                        String nomInterest = arrayInfBearings[finalI][0];
+                        nomInterestText.setText(nomInterest);
 
-                            if(lastTtsSaid != nomInterest && !isTtsMuted){
-                                tts.speak(nomInterest,TextToSpeech.QUEUE_FLUSH,null);
-                            }
-                            lastTtsSaid = nomInterest;
+                        if(!lastTtsSaid.equals(nomInterest) && !isTtsMuted){
+                            tts.speak(nomInterest,TextToSpeech.QUEUE_FLUSH,null);
                         }
+                        lastTtsSaid = nomInterest;
                     });
                     break;
                 }
@@ -244,7 +224,9 @@ public class ManagerApp {
     private class ResetLocation implements Runnable {
         @Override
         public void run() {
-            if (tracker.getLocation() != null) {
+            handlerOfToasts.post(() -> tracker.getLocation());
+
+            if (tracker.location != null) {
                 double CurrentLatitude = tracker.getCurrentLatitude(), CurrentLongitude = tracker.getCurrentLongitude();
                 for (Interest interest : listOfInterests) {
                     interest.findBearingFromUser(CurrentLatitude, CurrentLongitude);
@@ -252,19 +234,13 @@ public class ManagerApp {
                 }
                 mediumBearingInterests = createOrientationTable(listOfInterests);
 
-                latitudeHereText.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        String latitudeHere = latiLongFormat.format(CurrentLatitude);
-                        latitudeHereText.setText(latitudeHere);
-                    }
+                latitudeHereText.post(() -> {
+                    String latitudeHere = latiLongFormat.format(CurrentLatitude);
+                    latitudeHereText.setText(latitudeHere);
                 });
-                longitudeHereText.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        String longitudeHere = latiLongFormat.format(CurrentLongitude);
-                        longitudeHereText.setText(longitudeHere);
-                    }
+                longitudeHereText.post(() -> {
+                    String longitudeHere = latiLongFormat.format(CurrentLongitude);
+                    longitudeHereText.setText(longitudeHere);
                 });
 
                 Log.d("Thread findind distance", "Thread has finished to update");
@@ -272,18 +248,12 @@ public class ManagerApp {
 
             } else {
                 Log.d("Reset Location", "Location is null");
-                handlerOfToasts.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(context, "L'accès à la localisation a écouchée", Toast.LENGTH_LONG);
-                    }
-                });
+                handlerOfToasts.post(() -> Toast.makeText(context, "L'accès à la localisation a écouchée", Toast.LENGTH_LONG));
             }
         }
     }
 
     private class CheckInterestInFront implements Runnable {
-
         @Override
         public void run() {
             while (true) {

@@ -72,8 +72,11 @@ public class Tracker extends Service implements LocationListener {
                     if (locationManager != null) {
                         location = locationManager
                                 .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                        CurrentLatitude = location.getLatitude();
-                        CurrentLongitude = location.getLongitude();
+                        if(location != null ){
+                            CurrentLatitude = location.getLatitude();
+                            CurrentLongitude = location.getLongitude();
+                        }
+
                     }
                 }
                 if (isGPSEnabled) {
@@ -88,8 +91,10 @@ public class Tracker extends Service implements LocationListener {
                     //Log.d("GPS Enabled", "GPS Enabled");
                     if (locationManager != null) {
                         location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                        CurrentLatitude = location.getLatitude();
-                        CurrentLongitude = location.getLongitude();
+                        if(location != null ){
+                            CurrentLatitude = location.getLatitude();
+                            CurrentLongitude = location.getLongitude();
+                        }
                     }
                 }
             }
