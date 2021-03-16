@@ -4,7 +4,8 @@ import android.content.Intent;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.speech.tts.TextToSpeech;
+
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -15,31 +16,24 @@ import android.widget.TextView;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    ImageView boussoleView;
-    TextView angleNorth, latitudeHere, longitudeHere, distance, nomInterest, localisationText;
-    Button updateButton;
-
-    TextToSpeech t1;
-
-    // ** Programmer world : https://www.youtube.com/watch?v=Dqg1A4hy-jI
+    private ImageView boussoleView;
+    private TextView angleNorth, latitudeHere, longitudeHere, distance, nomInterest, localisationText;
+    private Button updateButton,syntheseButton;
 
 
-    private Tracker gpsTracker;
+
     private ManagerApp manager;
+    private Boussole boussole;
 
-    private List<Interest> interestPoints = new ArrayList<>();
     private final List<TextView> listTextViews = new ArrayList<>();
-    Boussole boussole;
 
-    // ** Programmer world
+    private int requestCode=1;
+
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,16 +42,15 @@ public class MainActivity extends AppCompatActivity {
 
         setUpViews();
         updateButton.setOnClickListener(v -> manager.notifyResetLocation());
+        syntheseButton.setOnClickListener(v -> manager.changeSyntheseVocaleMode(syntheseButton));
 
         SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         boussole = new Boussole(sensorManager, boussoleView, angleNorth);
 
-        gpsTracker = new Tracker(this, localisationText);
+        Tracker gpsTracker = new Tracker(this, localisationText);
 
         manager = new ManagerApp(this, boussole, gpsTracker, listTextViews);
-        manager.readInterestFile(CSVEnum.COULOISY);
-        interestPoints = manager.listOfInterests;
-        gpsTracker.interestPoints = interestPoints;
+
 
         start();
 
@@ -67,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         manager.start();
     }
 
-    // ** Programmer world
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -80,9 +73,10 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         try {
             boussole.start();
-            manager.unmuteTTS();
-        } catch (NullPointerException npe) {
+            manager.restartTTS();
 
+        } catch (NullPointerException npe) {
+            npe.printStackTrace();
         }
 
     }
@@ -91,9 +85,9 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         try {
             boussole.pause();
-            manager.muteTTS();
-        } catch (NullPointerException npe) {
 
+        } catch (NullPointerException npe) {
+            npe.printStackTrace();
         }
     }
 
@@ -114,9 +108,20 @@ public class MainActivity extends AppCompatActivity {
 
     //Change the activity to Param Intent
     public void goToParam() {
-        startActivity(new Intent(MainActivity.this, MenuActivity.class));
+        startActivityForResult(new Intent(MainActivity.this, MenuActivity.class),requestCode);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(manager.getLastMapUsed() == data.getExtras().get("MAP_ID") && manager.getLastMapUsed() == data.getExtras().get("ANGLE")){
+            Log.d("Intent comeback","Angle and map unchanged");
+        }
+        else{
+            Log.d("Intent comeback","New Angle"+Config.DEFAULT_RESEARCH_ANGLE+" and map "+Config.CURRENT_MAP_ID.name());
+            manager.start();
+        }
+    }
     public void setUpViews() {
         //boussole related
         boussoleView = findViewById(R.id.boussoleView);
@@ -130,9 +135,9 @@ public class MainActivity extends AppCompatActivity {
         listTextViews.add(updateButton = findViewById(R.id.button));
         listTextViews.add(localisationText = findViewById((R.id.localisationCheckText)));
 
+        //Accessibility related
+        syntheseButton = findViewById(R.id.buttonSyntheseVocale);
 
         //UI related
-
-
     }
 }

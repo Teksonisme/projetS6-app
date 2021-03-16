@@ -2,4 +2,26 @@
     <string name="app_name">Let\'s Find it</string>
     <string name="button_menu">Menu</string>
     <string name="default_text">Defaultum</string>
+    <string name="_15">15°</string>
+    <string name="_12">12°</string>
+    <string name="_5">5°</string>
+    <string name="_8">8°</string>
+    <string name="string_8" />
+    <string name="synth_se_vocale">Synthèse vocale</string>
+    <string name="param_tres">Paramètres</string>
+    <string name="changer_l_angle">Changer l\'angle :</string>
+    <string name="angle">Angle :</string>
+    <string name="_0">0</string>
+    <string name="ce_point_est_une_distance_de">Ce point est à une distance de</string>
+    <string name="distancetext">distanceText</string>
+    <string name="latitudetext">latitudeText</string>
+    <string name="longitudetext">longitudeText</string>
+    <string name="le_point_devant_vous_est">Le point devant vous est</string>
+    <string name="vos_coordonn_es">Vos coordonnées</string>
+    <string name="la_synth_se_vocale_est_desactiv_e">La synthèse vocale est desactivée</string>
+    <string name="la_localisation_est_d_sactiv_e">La localisation est désactivée</string>
+    <string name="mettre_jour">Mettre à jour</string>
+    <string name="r_activer_synth_se_vocale">Réactiver synthèse vocale</string>
+    <string name="accessibilité">Accessibilité</string>
+    <string name="cartographie">Cartographie</string>
 </resources>

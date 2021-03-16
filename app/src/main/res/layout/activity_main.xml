@@ -17,7 +17,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0"
-        app:srcCompat="@drawable/fondblanc" />
+        app:srcCompat="@drawable/fondblanc"
+        android:contentDescription="TODO" />
 
     <ImageView
         android:id="@+id/boussoleView"
@@ -52,16 +53,18 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/rectangle" />
+        app:srcCompat="@drawable/rectangle"
+        android:contentDescription="TODO" />
 
     <ImageView
-        android:id="@+id/imageView3"
+        android:id="@+id/logo"
         android:layout_width="195dp"
         android:layout_height="138dp"
         android:layout_marginTop="4dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/logo_application_toon" />
+        app:srcCompat="@drawable/logo_application_toon"
+        android:contentDescription="TODO" />
 
     <TextView
         android:id="@+id/angleText"
@@ -73,7 +76,7 @@
         android:layout_marginRight="8dp"
         android:fontFamily="@font/source_serif_pro"
         android:gravity="center"
-        android:text="0"
+        android:text="@string/_0"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/boussoleView"
         app:layout_constraintTop_toBottomOf="@+id/angleText2" />
@@ -89,7 +92,7 @@
         android:layout_marginRight="10dp"
         android:layout_marginBottom="188dp"
         android:fontFamily="@font/source_serif_pro"
-        android:text="Angle :"
+        android:text="@string/angle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -101,11 +104,11 @@
         android:id="@+id/textView3"
         android:layout_width="193dp"
         android:layout_height="28dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginLeft="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="29dp"
-        android:text="Ce point est à une distance de "
+        android:text="@string/ce_point_est_une_distance_de"
         app:layout_constraintBottom_toBottomOf="@+id/backRectGrey"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -115,11 +118,13 @@
 
     <TextView
         android:id="@+id/distance"
-        android:layout_width="150dp"
-        android:layout_height="28dp"
+        android:layout_width="133dp"
+        android:layout_height="41dp"
         android:layout_marginTop="10dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginRight="32dp"
         android:layout_marginBottom="29dp"
-        android:text="distanceText"
+        android:text="@string/distancetext"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/backRectGrey"
         app:layout_constraintEnd_toEndOf="parent"
@@ -136,7 +141,7 @@
         android:layout_marginLeft="24dp"
         android:layout_marginTop="6dp"
         android:fontFamily="@font/source_serif_pro"
-        android:text="latitudeText"
+        android:text="@string/latitudetext"
         android:textColor="#000000"
         android:textSize="18sp"
         android:textStyle="italic"
@@ -154,7 +159,7 @@
         android:layout_marginTop="6dp"
         android:layout_marginBottom="25dp"
         android:fontFamily="@font/source_serif_pro"
-        android:text="longitudeText"
+        android:text="@string/longitudetext"
         android:textColor="#000000"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -169,7 +174,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginTop="16dp"
-        android:text="Le point devant vous est"
+        android:text="@string/le_point_devant_vous_est"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/backRectGrey" />
 
@@ -180,7 +185,7 @@
         android:layout_marginTop="9dp"
         android:layout_marginBottom="8dp"
         android:fontFamily="@font/source_serif_pro"
-        android:text="Vos coordonnées "
+        android:text="@string/vos_coordonn_es"
         android:textColor="#000000"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/background"
@@ -197,7 +202,7 @@
         android:layout_marginBottom="16dp"
         android:fontFamily="@font/source_serif_pro"
         android:gravity="center_horizontal|center_vertical"
-        android:text="La synthèse vocale est desactivée"
+        android:text="@string/la_synth_se_vocale_est_desactiv_e"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -213,12 +218,12 @@
         android:layout_marginRight="100dp"
         android:fontFamily="@font/source_serif_pro"
         android:gravity="center_horizontal|center_vertical"
-        android:text="La localisation est désactivée"
+        android:text="@string/la_localisation_est_d_sactiv_e"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/imageView3"
+        app:layout_constraintStart_toEndOf="@+id/logo"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.029" />
 
@@ -247,7 +252,7 @@
         android:id="@+id/button"
         android:layout_width="91dp"
         android:layout_height="62dp"
-        android:text="Mettre à jour"
+        android:text="@string/mettre_jour"
         android:textSize="10sp"
         app:layout_constraintBottom_toTopOf="@+id/backRectBlue"
         app:layout_constraintEnd_toStartOf="@+id/boussoleView"
@@ -255,5 +260,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/backRectGrey"
         app:layout_constraintVertical_bias="1.0" />
+
+    <Button
+        android:id="@+id/buttonSyntheseVocale"
+        android:layout_width="86dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="6dp"
+        android:text="@string/r_activer_synth_se_vocale"
+        android:textSize="8sp"
+        app:layout_constraintBottom_toTopOf="@+id/syntheseVocale"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/boussoleView"
+        app:layout_constraintTop_toBottomOf="@+id/angleText"
+        app:layout_constraintVertical_bias="0.583" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

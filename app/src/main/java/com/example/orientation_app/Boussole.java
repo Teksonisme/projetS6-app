@@ -28,9 +28,6 @@ public class Boussole implements SensorEventListener {
     private float correctAzimuth = 0f;
     private final SensorManager mSensorManager;
 
-    //Used to reduce noise of motion sensors ( filter )
-    private final float alpha = 0.965f;
-
     Boussole(SensorManager sensorM, ImageView boussoleView, TextView angleToNorth){
         this.mSensorManager = sensorM;
         this.boussoleView = boussoleView;
@@ -42,15 +39,17 @@ public class Boussole implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         synchronized(this){
+            //Used to reduce noise of motion sensors ( filter )
+            float alpha = 0.965f;
             if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
-                mGravity[0] = alpha*mGravity[0]+(1-alpha)*event.values[0];
-                mGravity[1] = alpha*mGravity[1]+(1-alpha)*event.values[1];
-                mGravity[2] = alpha*mGravity[2]+(1-alpha)*event.values[2];
+                mGravity[0] = alpha *mGravity[0]+(1- alpha)*event.values[0];
+                mGravity[1] = alpha *mGravity[1]+(1- alpha)*event.values[1];
+                mGravity[2] = alpha *mGravity[2]+(1- alpha)*event.values[2];
             }
             if(event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD){
-                mGeomagnetic[0] = alpha*mGeomagnetic[0]+(1-alpha)*event.values[0];
-                mGeomagnetic[1] = alpha*mGeomagnetic[1]+(1-alpha)*event.values[1];
-                mGeomagnetic[2] = alpha*mGeomagnetic[2]+(1-alpha)*event.values[2];
+                mGeomagnetic[0] = alpha *mGeomagnetic[0]+(1- alpha)*event.values[0];
+                mGeomagnetic[1] = alpha *mGeomagnetic[1]+(1- alpha)*event.values[1];
+                mGeomagnetic[2] = alpha *mGeomagnetic[2]+(1- alpha)*event.values[2];
             }
             boolean success = SensorManager.getRotationMatrix(mRotationMatrix,mOrientation,mGravity,mGeomagnetic);
             if(success){

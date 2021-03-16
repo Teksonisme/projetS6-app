@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,12 +40,16 @@ public class ManagerApp {
     private String[][] mediumBearingInterests;
     private int arrayInfSize = 0;
 
-    private boolean updateInProgress = false, isCheckThreadEnRoute = false;
-    private boolean isTtsMuted = false;
+    private CSVEnum lastMapUsed = Config.CURRENT_MAP_ID;
+    private double lastAngleUsed = Config.DEFAULT_RESEARCH_ANGLE;
+
+    private boolean updateInProgress = false, isCheckThreadEnRoute = false, isTtsMuted = true;
+
     private Thread resetLocation, checkInterestFront;
 
     private final NumberFormat latiLongFormat = new DecimalFormat("#0.00000");
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public ManagerApp(Context context, Boussole boussole, Tracker tracker, List<TextView> textViews) {
         this.context = context;
         this.boussole = boussole;
@@ -62,14 +67,19 @@ public class ManagerApp {
         });
 
         handlerOfToasts = new Handler(Looper.getMainLooper());
+
     }
 
     // Code from San Askaruly : https://stackoverflow.com/questions/43055661/reading-csv-file-in-android-app/50443558
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public void readInterestFile(CSVEnum area) {
+
         int value;
+        listOfInterests = new ArrayList<>();
+        lastMapUsed = area;
+
         if ((value = CSVEnum.findIdOfCSV(area)) != -1) {
-            InputStream is = context.getResources().openRawResource(CSVEnum.findIdOfCSV(area));
+            InputStream is = context.getResources().openRawResource(value);
 
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(is, StandardCharsets.UTF_8)
@@ -82,6 +92,7 @@ public class ManagerApp {
                     Log.d("MyActivity", "Line: " + line);
                     // use comma as separator columns of CSV
                     String[] tokens = line.split(",");
+
                     // Read the data 0 : name, 1 : latitude, 2 : longitude, 3 : type
                     Interest interest = new Interest(tokens[0], Float.parseFloat(tokens[1]), Float.parseFloat(tokens[2]), tokens[3]);
                     listOfInterests.add(interest);
@@ -128,7 +139,7 @@ public class ManagerApp {
                     arrayInfBearings[i][2] = "" + medium;
                     Log.d("Medium[" + i + "] " + arrayInfBearings[i][0], "" + arrayInfBearings[i][2]);
                 } else if (i == 0) {
-                    medium = 13;
+                    medium = 0.5;
                     arrayInfBearings[i][0] = listOfInterests.get(i).getName();
                     arrayInfBearings[i][1] = "" + listOfInterests.get(i).getDistanceFromUser();
                     arrayInfBearings[i][2] = "" + medium;
@@ -153,14 +164,15 @@ public class ManagerApp {
     private void arrangeListOfInterestByAngle(List<Interest> listOfInterests) {
         double angleOfResearch = Config.DEFAULT_RESEARCH_ANGLE;
         for (int i = 0; i < listOfInterests.size(); i++) {
+            // Check First & Last and First & Seconnd
             if (i == 0) {
-                //Remove if there is less than the angle of Research available between the bearings of two interests encapsulating the first interest
                 if (((360 - listOfInterests.get(listOfInterests.size() - 1).getBearingFromUser() + listOfInterests.get(i).getBearingFromUser()) <= angleOfResearch) &&
                         ((listOfInterests.get(i + 1).getBearingFromUser() - listOfInterests.get(i).getBearingFromUser()) <= angleOfResearch)) {
                     Log.d("Remove[" + i + "] " + listOfInterests.get(i).getName(), "Bearing value" + listOfInterests.get(i).getBearingFromUser());
                     listOfInterests.remove(i);
                 }
             } else {
+                // Check Last & Before Last and Last & First
                 if (i == listOfInterests.size() - 1) {
                     if (((listOfInterests.get(i).getBearingFromUser() - listOfInterests.get(i - 1).getBearingFromUser()) <= angleOfResearch) &&
                             ((360 - listOfInterests.get(i).getBearingFromUser() + listOfInterests.get(0).getBearingFromUser()) <= angleOfResearch)) {
@@ -169,6 +181,7 @@ public class ManagerApp {
                         listOfInterests.remove(i);
                     }
                 } else {
+                    // All the other cases
                     if (((listOfInterests.get(i).getBearingFromUser() - listOfInterests.get(i - 1).getBearingFromUser()) <= angleOfResearch) &&
                             ((listOfInterests.get(i + 1).getBearingFromUser() - listOfInterests.get(i).getBearingFromUser()) <= angleOfResearch)) {
                         Log.d("Remove[" + i + "] " + listOfInterests.get(i).getName(), "Bearing value" + listOfInterests.get(i).getBearingFromUser());
@@ -187,14 +200,16 @@ public class ManagerApp {
                     int finalI = i;
                     distanceFromHereText.post(() -> {
                         float value = (float) Math.round(Double.parseDouble(arrayInfBearings[finalI][1]) * 1000) / 1000;
-                        String distance =  value + " kilomètres ";
+                        String distance = value + " kilomètres ";
                         distanceFromHereText.setText(distance);
                     });
                     nomInterestText.post(() -> {
                         String nomInterest = arrayInfBearings[finalI][0];
                         nomInterestText.setText(nomInterest);
-                        if(!lastTtsSaid.equals(nomInterest) && !isTtsMuted){
-                            tts.speak(nomInterest,TextToSpeech.QUEUE_FLUSH,null);
+
+                        //TTS speaker
+                        if (!lastTtsSaid.equals(nomInterest) && !isTtsMuted && Config.isSyntheseActivated) {
+                            tts.speak(nomInterest, TextToSpeech.QUEUE_FLUSH, null);
                         }
                         lastTtsSaid = nomInterest;
                     });
@@ -203,15 +218,16 @@ public class ManagerApp {
                     int finalI = i;
                     distanceFromHereText.post(() -> {
                         float value = (float) Math.round(Double.parseDouble(arrayInfBearings[finalI][1]) * 1000) / 1000;
-                        String distance =  value + " kilomètres ";
+                        String distance = value + " kilomètres ";
                         distanceFromHereText.setText(distance);
                     });
                     nomInterestText.post(() -> {
                         String nomInterest = arrayInfBearings[finalI][0];
                         nomInterestText.setText(nomInterest);
 
-                        if(!lastTtsSaid.equals(nomInterest) && !isTtsMuted){
-                            tts.speak(nomInterest,TextToSpeech.QUEUE_FLUSH,null);
+                        //TTS Speaker
+                        if (!lastTtsSaid.equals(nomInterest) && !isTtsMuted && Config.isSyntheseActivated) {
+                            tts.speak(nomInterest, TextToSpeech.QUEUE_FLUSH, null);
                         }
                         lastTtsSaid = nomInterest;
                     });
@@ -222,11 +238,14 @@ public class ManagerApp {
     }
 
     private class ResetLocation implements Runnable {
+        @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         @Override
         public void run() {
             handlerOfToasts.post(() -> tracker.getLocation());
 
             if (tracker.location != null) {
+
+                readInterestFile(Config.CURRENT_MAP_ID);
                 double CurrentLatitude = tracker.getCurrentLatitude(), CurrentLongitude = tracker.getCurrentLongitude();
                 for (Interest interest : listOfInterests) {
                     interest.findBearingFromUser(CurrentLatitude, CurrentLongitude);
@@ -246,9 +265,10 @@ public class ManagerApp {
                 Log.d("Thread findind distance", "Thread has finished to update");
                 updateInProgress = false;
 
+
             } else {
                 Log.d("Reset Location", "Location is null");
-                handlerOfToasts.post(() -> Toast.makeText(context, "L'accès à la localisation a écouchée", Toast.LENGTH_LONG));
+                handlerOfToasts.post(() -> Toast.makeText(context, "L'accès à la localisation a échouée", Toast.LENGTH_LONG));
             }
         }
     }
@@ -273,6 +293,7 @@ public class ManagerApp {
             ResetLocation resetLocationRun = new ResetLocation();
             resetLocation = new Thread(resetLocationRun);
             resetLocation.start();
+
             if (!isCheckThreadEnRoute) {
                 isCheckThreadEnRoute = true;
                 CheckInterestInFront checkInterestInFrontRun = new CheckInterestInFront();
@@ -282,11 +303,8 @@ public class ManagerApp {
         }
     }
 
-    public void muteTTS(){
-        isTtsMuted = true;
-    }
-    public void unmuteTTS(){
-        isTtsMuted = false;
+    public void restartTTS() {
+
         tts = new TextToSpeech(context, status -> {
             if (status != TextToSpeech.ERROR) {
                 tts.setLanguage(Locale.FRANCE);
@@ -296,7 +314,16 @@ public class ManagerApp {
 
     public void notifyResetLocation() {
         if (resetLocation != null) {
-            //resetLocation.notify();
+            start();
+        }
+    }
+
+    public void changeSyntheseVocaleMode(Button button) {
+        isTtsMuted = !isTtsMuted;
+        if (!isTtsMuted) {
+            button.setText("Désactiver synthèse vocale");
+        } else {
+            button.setText("Réactiver synthèse vocale");
         }
     }
 
@@ -309,9 +336,12 @@ public class ManagerApp {
             checkInterestFront.interrupt();
             Log.d("Thread removal", "Check Interest In Front Cleaned");
         }
-        if(tts != null){
+        if (tts != null) {
+            tts.stop();
             tts.shutdown();
         }
     }
-
+    public CSVEnum getLastMapUsed() {
+        return lastMapUsed;
+    }
 }

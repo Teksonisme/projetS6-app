@@ -29,8 +29,6 @@ public class Tracker extends Service implements LocationListener {
     TextView localisationText;
     Location location;
 
-    List<Interest> interestPoints;
-
     public static int EARTH_RADIUS = 6371;
 
     double CurrentLatitude;
