@@ -3,6 +3,7 @@ package com.example.orientation_app;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -10,7 +11,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +21,13 @@ import java.util.List;
 public class MenuActivity extends AppCompatActivity {
 
     CheckBox checkAngle5, checkAngle8, checkAngle12, checkAngle15, checkCarte1, checkCarte2, checkCarte3;
-    Switch switchSyntheseVocale;
+    ImageView background,logo;
+    Switch switchSyntheseVocale,switchDarkTheme;
 
     CheckBox lastCheckAngle = null, lastCheckCarte = null;
     List<CheckBox> checkBoxAngleList = new ArrayList<>();
     List<CheckBox> checkBoxCarteList = new ArrayList<>();
+    List<TextView> listNomCarte = new ArrayList<>();
 
     private View.OnClickListener oclCarte = new View.OnClickListener() {
         @Override
@@ -36,6 +41,7 @@ public class MenuActivity extends AppCompatActivity {
             }
             Log.d("Config changed", "Angle = " + Config.DEFAULT_RESEARCH_ANGLE + " Map" + Config.CURRENT_MAP_ID.name());
             lastCheckCarte = vCheck;
+
         }
     };
     private View.OnClickListener oclAngle = new View.OnClickListener() {
@@ -62,6 +68,15 @@ public class MenuActivity extends AppCompatActivity {
         setUpViews();
 
         switchSyntheseVocale.setOnClickListener(v -> Config.isSyntheseActivated = !Config.isSyntheseActivated);
+        switchDarkTheme.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Config.isIsDarkTheme = !Config.isIsDarkTheme;
+                changeTheme();
+            }
+        });
+        changeTheme();
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -83,17 +98,26 @@ public class MenuActivity extends AppCompatActivity {
         }
     }
 
-    public void setUpViews() {
+    private void setUpViews() {
         checkBoxAngleList.add(checkAngle5 = findViewById(R.id.checkBox5));
         checkBoxAngleList.add(checkAngle8 = findViewById(R.id.checkBox8));
         checkBoxAngleList.add(checkAngle12 = findViewById(R.id.checkBox12));
         checkBoxAngleList.add(checkAngle15 = findViewById(R.id.checkBox15));
 
         switchSyntheseVocale = findViewById(R.id.switchSyntheseVocale);
+        switchDarkTheme = findViewById(R.id.switchDarkTheme);
 
         checkBoxCarteList.add(checkCarte1 = findViewById(R.id.checkCarte1));
         checkBoxCarteList.add(checkCarte2 = findViewById(R.id.checkCarte2));
         checkBoxCarteList.add(checkCarte3 = findViewById(R.id.checkCarte3));
+
+        listNomCarte.add(findViewById(R.id.textChangeAngle));
+        listNomCarte.add(findViewById(R.id.textNomCarte1));
+        listNomCarte.add(findViewById(R.id.textNomCarte2));
+        listNomCarte.add(findViewById(R.id.textNomCarte3));
+
+        background = findViewById(R.id.backgroundMenu);
+        logo = findViewById(R.id.logoMenu);
 
         for (CheckBox checkBox : checkBoxAngleList) {
             checkBox.setOnClickListener(oclAngle);
@@ -113,19 +137,19 @@ public class MenuActivity extends AppCompatActivity {
         checkCurrentConfigState();
     }
 
-    public void automaticUncheckAngle() {
+    private void automaticUncheckAngle() {
         for (CheckBox checkBox : checkBoxAngleList) {
             checkBox.setChecked(false);
         }
     }
 
-    public void automaticUncheckCarte() {
+    private void automaticUncheckCarte() {
         for (CheckBox checkBox : checkBoxCarteList) {
             checkBox.setChecked(false);
         }
     }
 
-    public void onCheckboxClicked(View view) {
+    private void onCheckboxClicked(View view) {
         boolean isItChecked = ((CheckBox) view).isChecked();
 
         switch (view.getId()) {
@@ -184,9 +208,53 @@ public class MenuActivity extends AppCompatActivity {
         }
     }
 
-    public void checkCurrentConfigState() {
+    private void checkCurrentConfigState() {
         if (Config.isSyntheseActivated) {
             switchSyntheseVocale.setChecked(true);
         }
+        if(Config.isIsDarkTheme){
+            switchDarkTheme.setChecked(true);
+        }
+    }
+    private void changeTheme(){
+        int i = 0;
+
+
+        if(Config.isIsDarkTheme){
+            int color = getResources().getColor(R.color.white);
+            //Dark Theme
+            while(i < checkBoxAngleList.size()){
+
+                checkBoxAngleList.get(i).setTextColor(color);
+                i++;
+            }
+            i=0;
+            while(i < listNomCarte.size()){
+                listNomCarte.get(i).setTextColor(color);
+                i++;
+            }
+            background.setImageResource(R.drawable.fondnoir);
+            switchDarkTheme.setTextColor(color);
+            switchSyntheseVocale.setTextColor(color);
+            logo.setImageResource(R.drawable.logo_application_toon_darktheme);
+        }else{
+            int color = getResources().getColor(R.color.lightGray);
+            //White Theme
+            while(i < checkBoxAngleList.size()){
+
+                checkBoxAngleList.get(i).setTextColor(color);
+                i++;
+            }
+            i=0;
+            while(i < listNomCarte.size()){
+                listNomCarte.get(i).setTextColor(color);
+                i++;
+            }
+            background.setImageResource(R.drawable.fondblanc);
+            switchDarkTheme.setTextColor(color);
+            switchSyntheseVocale.setTextColor(color);
+            logo.setImageResource(R.drawable.logo_application_toon);
+        }
+
     }
 }

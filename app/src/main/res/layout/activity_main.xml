@@ -8,17 +8,15 @@
     tools:context=".MainActivity">
 
     <ImageView
-        android:id="@+id/background"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/backgroundMain"
+        android:layout_width="1000dp"
+        android:layout_height="1000dp"
+        android:contentDescription="TODO"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        app:srcCompat="@drawable/fondblanc"
-        android:contentDescription="TODO" />
+        app:srcCompat="@drawable/fondblanc" />
 
     <ImageView
         android:id="@+id/boussoleView"
@@ -31,7 +29,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/backRectGrey"
         app:layout_constraintVertical_bias="0.07"
-        app:srcCompat="@drawable/logo_la_bouss_2020_avatar" />
+        app:srcCompat="@drawable/boussole" />
 
     <ImageView
         android:id="@+id/backRectBlue"
@@ -101,7 +99,7 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView
-        android:id="@+id/textView3"
+        android:id="@+id/textCePointADistance"
         android:layout_width="193dp"
         android:layout_height="28dp"
         android:layout_marginStart="8dp"
@@ -129,7 +127,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/backRectGrey"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/textView3"
+        app:layout_constraintStart_toEndOf="@+id/textCePointADistance"
         app:layout_constraintTop_toBottomOf="@+id/nomInterest"
         app:layout_constraintVertical_bias="0.0" />
 
@@ -168,7 +166,7 @@
         tools:textStyle="italic" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/textCePointEst"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -188,7 +186,7 @@
         android:text="@string/vos_coordonn_es"
         android:textColor="#000000"
         android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@+id/background"
+        app:layout_constraintBottom_toTopOf="@+id/backgroundMain"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.042"
         app:layout_constraintStart_toStartOf="parent"

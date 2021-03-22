@@ -1,6 +1,10 @@
 package com.example.orientation_app;
 
 import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.drawable.Drawable;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,6 +17,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -21,18 +27,18 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ImageView boussoleView;
-    private TextView angleNorth, latitudeHere, longitudeHere, distance, nomInterest, localisationText;
-    private Button updateButton,syntheseButton;
+    private ImageView boussoleView, logo;
+    private TextView angleNorth, latitudeHere, longitudeHere, distance, nomInterest, localisationText,syntheseVocaleText;
+    private Button updateButton, syntheseButton;
 
-
+    public ImageView background;
 
     private ManagerApp manager;
     private Boussole boussole;
 
     private final List<TextView> listTextViews = new ArrayList<>();
 
-    private int requestCode=1;
+    private int requestCode = 1;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -50,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
         Tracker gpsTracker = new Tracker(this, localisationText);
 
         manager = new ManagerApp(this, boussole, gpsTracker, listTextViews);
-
 
         start();
 
@@ -94,6 +99,8 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         manager.cleanup();
+        boussole.pause();
+
     }
 
     @Override
@@ -108,20 +115,24 @@ public class MainActivity extends AppCompatActivity {
 
     //Change the activity to Param Intent
     public void goToParam() {
-        startActivityForResult(new Intent(MainActivity.this, MenuActivity.class),requestCode);
+        startActivityForResult(new Intent(MainActivity.this, MenuActivity.class), requestCode);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(manager.getLastMapUsed() == data.getExtras().get("MAP_ID") && manager.getLastMapUsed() == data.getExtras().get("ANGLE")){
-            Log.d("Intent comeback","Angle and map unchanged");
-        }
-        else{
-            Log.d("Intent comeback","New Angle"+Config.DEFAULT_RESEARCH_ANGLE+" and map "+Config.CURRENT_MAP_ID.name());
+        if (manager.getLastMapUsed() == data.getExtras().get("MAP_ID") && manager.getLastMapUsed() == data.getExtras().get("ANGLE")) {
+            Log.d("Intent comeback", "Angle and map unchanged");
+        } else {
+            Log.d("Intent comeback", "New Angle" + Config.DEFAULT_RESEARCH_ANGLE + " and map " + Config.CURRENT_MAP_ID.name());
             manager.start();
         }
+        if (Config.isSyntheseActivated) syntheseVocaleText.setText("La synthèse vocale est activée");
+        else syntheseVocaleText.setText("La synthèse vocale est désactivée");
+
+            changeTheme(listTextViews);
     }
+
     public void setUpViews() {
         //boussole related
         boussoleView = findViewById(R.id.boussoleView);
@@ -137,7 +148,46 @@ public class MainActivity extends AppCompatActivity {
 
         //Accessibility related
         syntheseButton = findViewById(R.id.buttonSyntheseVocale);
+        syntheseVocaleText = findViewById(R.id.syntheseVocale);
 
         //UI related
+        background = findViewById(R.id.backgroundMain);
+        logo = findViewById(R.id.logo);
+
+
+        listTextViews.add(findViewById(R.id.textCePointADistance));
+        listTextViews.add(findViewById(R.id.textCePointEst));
+        listTextViews.add(findViewById(R.id.angleText2));
+        listTextViews.add(angleNorth);
+        listTextViews.add(findViewById(R.id.syntheseVocale));
+    }
+
+    public void changeTheme(List<TextView> theViews) {
+
+        int i = 2;
+        // 0, 1, 3, 4 !! Don't change
+        // To Dark Theme
+        if (Config.isIsDarkTheme) {
+            while (i < theViews.size()) {
+                theViews.get(i).setTextColor(Color.WHITE);
+                if (i == 2)
+                    i += 3;
+                else i++;
+            }
+            boussole.changeImage(R.drawable.boussole_darktheme);
+            background.setImageResource(R.drawable.fondnoir);
+            logo.setImageResource(R.drawable.logo_application_toon_darktheme);
+        } else {
+            // To White Theme
+            while (i < theViews.size()) {
+                theViews.get(i).setTextColor(getResources().getColor(R.color.lightGray));
+                if (i == 2)
+                    i += 3;
+                else i++;
+            }
+            boussole.changeImage(R.drawable.boussole);
+            background.setImageResource(R.drawable.fondblanc);
+            logo.setImageResource(R.drawable.logo_application_toon);
+        }
     }
 }

@@ -53,6 +53,7 @@ public class Tracker extends Service implements LocationListener {
 
             if (!isGPSEnabled && !isNetworkEnabled) {
 
+                localisationText.setText("La localisation est désactivée");
             } else {
                 this.canGetLocation = true;
                 if (isNetworkEnabled) {
@@ -95,6 +96,7 @@ public class Tracker extends Service implements LocationListener {
                         }
                     }
                 }
+                localisationText.setText("La localisation est activée");
             }
         } catch (Exception e) {
             e.printStackTrace();

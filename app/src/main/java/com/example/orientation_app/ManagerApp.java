@@ -1,13 +1,16 @@
 package com.example.orientation_app;
 
+import android.app.Activity;
 import android.content.Context;
-import android.location.Location;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -87,17 +90,15 @@ public class ManagerApp {
             String line = "";
             try {
                 reader.readLine();
-                // If buffer is not empty
+
                 while ((line = reader.readLine()) != null) {
                     Log.d("MyActivity", "Line: " + line);
-                    // use comma as separator columns of CSV
+
                     String[] tokens = line.split(",");
 
                     // Read the data 0 : name, 1 : latitude, 2 : longitude, 3 : type
-                    Interest interest = new Interest(tokens[0], Float.parseFloat(tokens[1]), Float.parseFloat(tokens[2]), tokens[3]);
+                    Interest interest = new Interest(tokens[0], Double.parseDouble(tokens[1]), Double.parseDouble(tokens[2]), tokens[3]);
                     listOfInterests.add(interest);
-
-                    Log.d("My Activity", "Just created: " + interest);
                 }
 
                 reader.close();
@@ -117,7 +118,9 @@ public class ManagerApp {
 
         if (listOfInterests != null || !listOfInterests.isEmpty()) {
 
+            // Range la liste des intérêts en fonction de leur bearing
             Collections.sort(listOfInterests, new InterestBearingComparator());
+
             for (Interest interest : listOfInterests) {
                 Log.d("Bearing of", "" + interest.getName() + " bearing : " + interest.getBearingFromUser());
             }
@@ -133,13 +136,13 @@ public class ManagerApp {
                         + listOfInterests.get(i).getBearingFromUser());
 
                 if (i == 0 && medium > 360) {
-                    medium /= 2 - 180;
+                    medium = medium / 2 - 180;
                     arrayInfBearings[i][0] = listOfInterests.get(i).getName();
                     arrayInfBearings[i][1] = "" + listOfInterests.get(i).getDistanceFromUser();
                     arrayInfBearings[i][2] = "" + medium;
                     Log.d("Medium[" + i + "] " + arrayInfBearings[i][0], "" + arrayInfBearings[i][2]);
                 } else if (i == 0) {
-                    medium = 0.5;
+                    medium = 0.00001;
                     arrayInfBearings[i][0] = listOfInterests.get(i).getName();
                     arrayInfBearings[i][1] = "" + listOfInterests.get(i).getDistanceFromUser();
                     arrayInfBearings[i][2] = "" + medium;
@@ -241,7 +244,7 @@ public class ManagerApp {
         @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         @Override
         public void run() {
-            handlerOfToasts.post(() -> tracker.getLocation());
+            handlerOfToasts.post(tracker::getLocation);
 
             if (tracker.location != null) {
 
@@ -341,7 +344,10 @@ public class ManagerApp {
             tts.shutdown();
         }
     }
+
     public CSVEnum getLastMapUsed() {
         return lastMapUsed;
     }
+
+
 }

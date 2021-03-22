@@ -32,7 +32,6 @@ public class Boussole implements SensorEventListener {
         this.mSensorManager = sensorM;
         this.boussoleView = boussoleView;
         this.angleToNorth = angleToNorth;
-
         start();
     }
 
@@ -87,5 +86,9 @@ public class Boussole implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    public void changeImage(int imageId){
+        boussoleView.setImageResource(imageId);
     }
 }
