@@ -57,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
 
         manager = new ManagerApp(this, boussole, gpsTracker, listTextViews);
 
+        if (Config.isSyntheseActivated) syntheseVocaleText.setText("La synthèse vocale est activée");
+        else syntheseVocaleText.setText("La synthèse vocale est désactivée");
+
         start();
 
     }
