@@ -20,9 +20,9 @@ import java.util.List;
 
 public class MenuActivity extends AppCompatActivity {
 
-    CheckBox checkAngle5, checkAngle8, checkAngle12, checkAngle15, checkCarte1, checkCarte2, checkCarte3;
-    ImageView background,logo;
-    Switch switchSyntheseVocale,switchDarkTheme;
+    CheckBox checkAngle5, checkAngle8, checkAngle12, checkAngle15, checkCarte1, checkCarte2, checkCarte3, checkCarte4;
+    ImageView background, logo;
+    Switch switchSyntheseVocale, switchDarkTheme;
 
     CheckBox lastCheckAngle = null, lastCheckCarte = null;
     List<CheckBox> checkBoxAngleList = new ArrayList<>();
@@ -97,7 +97,7 @@ public class MenuActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-
+    // On récupère les vues que l'on souhaite modifiées et utilisées
     private void setUpViews() {
         checkBoxAngleList.add(checkAngle5 = findViewById(R.id.checkBox5));
         checkBoxAngleList.add(checkAngle8 = findViewById(R.id.checkBox8));
@@ -110,6 +110,7 @@ public class MenuActivity extends AppCompatActivity {
         checkBoxCarteList.add(checkCarte1 = findViewById(R.id.checkCarte1));
         checkBoxCarteList.add(checkCarte2 = findViewById(R.id.checkCarte2));
         checkBoxCarteList.add(checkCarte3 = findViewById(R.id.checkCarte3));
+        checkBoxCarteList.add(checkCarte4 = findViewById(R.id.checkCarte4));
 
         listNomCarte.add(findViewById(R.id.textChangeAngle));
         listNomCarte.add(findViewById(R.id.textNomCarte1));
@@ -205,6 +206,12 @@ public class MenuActivity extends AppCompatActivity {
                     Config.CURRENT_MAP_ID = CSVEnum.COULOISY;
                 }
                 break;
+            case R.id.checkCarte4:
+                if (isItChecked) {
+                    automaticUncheckCarte();
+                    checkCarte4.setChecked(true);
+                    Config.CURRENT_MAP_ID = CSVEnum.MONTAGNES_PARCS_FRANCE;
+                }
         }
     }
 
@@ -212,24 +219,25 @@ public class MenuActivity extends AppCompatActivity {
         if (Config.isSyntheseActivated) {
             switchSyntheseVocale.setChecked(true);
         }
-        if(Config.isIsDarkTheme){
+        if (Config.isIsDarkTheme) {
             switchDarkTheme.setChecked(true);
         }
     }
-    private void changeTheme(){
+
+    private void changeTheme() {
         int i = 0;
 
 
-        if(Config.isIsDarkTheme){
+        if (Config.isIsDarkTheme) {
             int color = getResources().getColor(R.color.white);
             //Dark Theme
-            while(i < checkBoxAngleList.size()){
+            while (i < checkBoxAngleList.size()) {
 
                 checkBoxAngleList.get(i).setTextColor(color);
                 i++;
             }
-            i=0;
-            while(i < listNomCarte.size()){
+            i = 0;
+            while (i < listNomCarte.size()) {
                 listNomCarte.get(i).setTextColor(color);
                 i++;
             }
@@ -237,16 +245,16 @@ public class MenuActivity extends AppCompatActivity {
             switchDarkTheme.setTextColor(color);
             switchSyntheseVocale.setTextColor(color);
             logo.setImageResource(R.drawable.logo_application_toon_darktheme);
-        }else{
+        } else {
             int color = getResources().getColor(R.color.lightGray);
             //White Theme
-            while(i < checkBoxAngleList.size()){
+            while (i < checkBoxAngleList.size()) {
 
                 checkBoxAngleList.get(i).setTextColor(color);
                 i++;
             }
-            i=0;
-            while(i < listNomCarte.size()){
+            i = 0;
+            while (i < listNomCarte.size()) {
                 listNomCarte.get(i).setTextColor(color);
                 i++;
             }

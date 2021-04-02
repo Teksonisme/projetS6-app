@@ -112,13 +112,13 @@ public class ManagerApp {
         }
     }
 
-    // WIP : Retourne un tab de String en deux dimensions avec la valeur inférieur
+    // Retourne un tab de String en deux dimensions avec la valeur inférieur
     // étant dans la 3ème colonne ( 0 : name, 1 : distance, 2 : Moyenne du bearing d'avant et présent )
     private String[][] createOrientationTable(List<Interest> listOfInterests) {
 
         if (listOfInterests != null || !listOfInterests.isEmpty()) {
 
-            // Range la liste des intérêts en fonction de leur bearing
+            // Range la liste des intérêts en fonction de leurs bearings
             Collections.sort(listOfInterests, new InterestBearingComparator());
 
             for (Interest interest : listOfInterests) {
@@ -142,7 +142,7 @@ public class ManagerApp {
                     arrayInfBearings[i][2] = "" + medium;
                     Log.d("Medium[" + i + "] " + arrayInfBearings[i][0], "" + arrayInfBearings[i][2]);
                 } else if (i == 0) {
-                    medium = 0.00001;
+                    medium = 1;
                     arrayInfBearings[i][0] = listOfInterests.get(i).getName();
                     arrayInfBearings[i][1] = "" + listOfInterests.get(i).getDistanceFromUser();
                     arrayInfBearings[i][2] = "" + medium;
@@ -164,10 +164,11 @@ public class ManagerApp {
         return null;
     }
 
+    // Supprime les intérêts compris dans un même angle de recherche
     private void arrangeListOfInterestByAngle(List<Interest> listOfInterests) {
         double angleOfResearch = Config.DEFAULT_RESEARCH_ANGLE;
         for (int i = 0; i < listOfInterests.size(); i++) {
-            // Check First & Last and First & Seconnd
+            // Check First/Last and First/Second
             if (i == 0) {
                 if (((360 - listOfInterests.get(listOfInterests.size() - 1).getBearingFromUser() + listOfInterests.get(i).getBearingFromUser()) <= angleOfResearch) &&
                         ((listOfInterests.get(i + 1).getBearingFromUser() - listOfInterests.get(i).getBearingFromUser()) <= angleOfResearch)) {
@@ -175,7 +176,7 @@ public class ManagerApp {
                     listOfInterests.remove(i);
                 }
             } else {
-                // Check Last & Before Last and Last & First
+                // Check Last/Before Last and Last/First
                 if (i == listOfInterests.size() - 1) {
                     if (((listOfInterests.get(i).getBearingFromUser() - listOfInterests.get(i - 1).getBearingFromUser()) <= angleOfResearch) &&
                             ((360 - listOfInterests.get(i).getBearingFromUser() + listOfInterests.get(0).getBearingFromUser()) <= angleOfResearch)) {
@@ -196,7 +197,6 @@ public class ManagerApp {
     }
 
     private void showCurrentInterestInFront(String[][] arrayInfBearings, double angle) {
-
         if (arrayInfBearings != null) {
             for (int i = 0; i < arrayInfSize; i++) {
                 if (i == arrayInfSize - 1) {
@@ -246,7 +246,7 @@ public class ManagerApp {
         public void run() {
             handlerOfToasts.post(tracker::getLocation);
 
-            if (tracker.location != null) {
+            if (tracker.getLocation() != null) {
 
                 readInterestFile(Config.CURRENT_MAP_ID);
                 double CurrentLatitude = tracker.getCurrentLatitude(), CurrentLongitude = tracker.getCurrentLongitude();
@@ -256,6 +256,7 @@ public class ManagerApp {
                 }
                 mediumBearingInterests = createOrientationTable(listOfInterests);
 
+                // Post permet de transmettre au thread Main un bloc de code à éxécuter
                 latitudeHereText.post(() -> {
                     String latitudeHere = latiLongFormat.format(CurrentLatitude);
                     latitudeHereText.setText(latitudeHere);
@@ -270,6 +271,7 @@ public class ManagerApp {
 
 
             } else {
+                tracker.getLocation();
                 Log.d("Reset Location", "Location is null");
                 handlerOfToasts.post(() -> Toast.makeText(context, "L'accès à la localisation a échouée", Toast.LENGTH_LONG));
             }

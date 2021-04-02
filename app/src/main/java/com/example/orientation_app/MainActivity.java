@@ -1,6 +1,8 @@
 package com.example.orientation_app;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
@@ -28,7 +30,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private ImageView boussoleView, logo;
-    private TextView angleNorth, latitudeHere, longitudeHere, distance, nomInterest, localisationText,syntheseVocaleText;
+    private TextView angleNorth, latitudeHere, longitudeHere, distance, nomInterest, localisationText, syntheseVocaleText;
     private Button updateButton, syntheseButton;
 
     public ImageView background;
@@ -46,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         setUpViews();
         updateButton.setOnClickListener(v -> manager.notifyResetLocation());
         syntheseButton.setOnClickListener(v -> manager.changeSyntheseVocaleMode(syntheseButton));
@@ -57,7 +60,9 @@ public class MainActivity extends AppCompatActivity {
 
         manager = new ManagerApp(this, boussole, gpsTracker, listTextViews);
 
-        if (Config.isSyntheseActivated) syntheseVocaleText.setText("La synthèse vocale est activée");
+        getSharedPreferences();
+        if (Config.isSyntheseActivated)
+            syntheseVocaleText.setText("La synthèse vocale est activée");
         else syntheseVocaleText.setText("La synthèse vocale est désactivée");
 
         start();
@@ -65,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void start() {
+        changeTheme(listTextViews);
         manager.start();
     }
 
@@ -93,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         try {
             boussole.pause();
-
+            putSharedPreferences();
         } catch (NullPointerException npe) {
             npe.printStackTrace();
         }
@@ -103,12 +109,12 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         manager.cleanup();
         boussole.pause();
-
+        putSharedPreferences();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        //fonction ici pour changer les paramètres
+
         if (item.getItemId() == R.id.param) {
             goToParam();
             return true;
@@ -116,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    //Change the activity to Param Intent
+    // Passage à l'activité paramètre
     public void goToParam() {
         startActivityForResult(new Intent(MainActivity.this, MenuActivity.class), requestCode);
     }
@@ -124,18 +130,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        // ** Récupère les valeurs modifiées dans l'écran menu **
         if (manager.getLastMapUsed() == data.getExtras().get("MAP_ID") && manager.getLastMapUsed() == data.getExtras().get("ANGLE")) {
             Log.d("Intent comeback", "Angle and map unchanged");
         } else {
             Log.d("Intent comeback", "New Angle" + Config.DEFAULT_RESEARCH_ANGLE + " and map " + Config.CURRENT_MAP_ID.name());
             manager.start();
         }
-        if (Config.isSyntheseActivated) syntheseVocaleText.setText("La synthèse vocale est activée");
+        if (Config.isSyntheseActivated)
+            syntheseVocaleText.setText("La synthèse vocale est activée");
         else syntheseVocaleText.setText("La synthèse vocale est désactivée");
 
-            changeTheme(listTextViews);
+        changeTheme(listTextViews);
     }
 
+    // Charge toutes les views devant être modifiés dans des variables
     public void setUpViews() {
         //boussole related
         boussoleView = findViewById(R.id.boussoleView);
@@ -165,6 +174,7 @@ public class MainActivity extends AppCompatActivity {
         listTextViews.add(findViewById(R.id.syntheseVocale));
     }
 
+    // Permet de changer le thème ( blanc ou nuit ) de l'application.
     public void changeTheme(List<TextView> theViews) {
 
         int i = 2;
@@ -192,5 +202,27 @@ public class MainActivity extends AppCompatActivity {
             background.setImageResource(R.drawable.fondblanc);
             logo.setImageResource(R.drawable.logo_application_toon);
         }
+    }
+
+    // Sauvegarde les valeurs de certaines données à la fermeture de l'application.
+    public void putSharedPreferences() {
+        SharedPreferences sP = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor sPeditor = sP.edit();
+        sPeditor.putBoolean("DarkTheme", Config.isIsDarkTheme);
+        sPeditor.putBoolean("SynthèseVocale", Config.isSyntheseActivated);
+        sPeditor.putInt("IdCarte", CSVEnum.findIdOfCSV(Config.CURRENT_MAP_ID));
+        sPeditor.commit();
+        Log.d("Shared preference value", "Dark Theme : " + getResources().getString(R.string.isDarkTheme) + " , Synth Vocal : " + getResources().getString(R.string.isSyntheseActivated));
+        Log.d("Shared config value", "Dark Theme : " + Config.isIsDarkTheme + " , Synth Vocal : " + Config.isSyntheseActivated);
+    }
+
+    // Récupère les données sauvegardés au lancement de l'application ( Ici l'état de la synthèse vocale et du mode nuit )
+    public void getSharedPreferences() {
+        SharedPreferences sP = getPreferences(Context.MODE_PRIVATE);
+        Config.isSyntheseActivated = sP.getBoolean("SynthèseVocale", Config.isSyntheseActivated);
+        Config.isIsDarkTheme = sP.getBoolean("DarkTheme", Config.isIsDarkTheme);
+        Config.CURRENT_MAP_ID = CSVEnum.findCSVofId(sP.getInt("IdCarte", CSVEnum.findIdOfCSV(Config.CURRENT_MAP_ID)));
+        Log.d("Boolean value ", " DT : " + Config.isIsDarkTheme + " Synthese Vocale " + Config.isSyntheseActivated);
+
     }
 }

@@ -13,8 +13,10 @@
         android:contentDescription="TODO"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.499"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.501"
         app:srcCompat="@drawable/fondblanc" />
 
     <ImageView
@@ -148,7 +150,7 @@
         android:layout_marginBottom="24dp"
         android:contentDescription="12"
         android:text="@string/_12"
-        android:textColor="#D54F4F"
+        android:textColor="#000000"
         app:layout_constraintBottom_toTopOf="@+id/textView6"
         app:layout_constraintEnd_toStartOf="@+id/checkBox15"
         app:layout_constraintHorizontal_bias="0.567"
@@ -207,6 +209,17 @@
         app:layout_constraintTop_toBottomOf="@+id/textNomCarte2" />
 
     <TextView
+        android:id="@+id/textNomCarte4"
+        android:layout_width="157dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginLeft="32dp"
+        android:layout_marginTop="24dp"
+        android:text="Montagnes et parcs naturels français"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textNomCarte3" />
+
+    <TextView
         android:id="@+id/textNomCarte2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -249,5 +262,16 @@
         android:contentDescription="COULOISY"
         app:layout_constraintStart_toEndOf="@+id/textNomCarte1"
         app:layout_constraintTop_toBottomOf="@+id/checkCarte2" />
+
+    <CheckBox
+        android:id="@+id/checkCarte4"
+        android:layout_width="29dp"
+        android:layout_height="29dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginLeft="32dp"
+        android:layout_marginTop="14dp"
+        android:contentDescription="MONTAGNES_PARCS_FRANCE"
+        app:layout_constraintStart_toEndOf="@+id/textNomCarte1"
+        app:layout_constraintTop_toBottomOf="@+id/checkCarte3" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

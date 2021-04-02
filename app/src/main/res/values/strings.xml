@@ -24,4 +24,6 @@
     <string name="r_activer_synth_se_vocale">Réactiver synthèse vocale</string>
     <string name="accessibilité">Accessibilité</string>
     <string name="cartographie">Cartographie</string>
+    <string name="isDarkTheme">false</string>
+    <string name="isSyntheseActivated">false</string>
 </resources>

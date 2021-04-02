@@ -26,20 +26,18 @@ public class Interest {
     // *** https://www.movable-type.co.uk/scripts/latlong.html
     public void findDistanceFromUser(double latitudeUser, double longitudeUser) {
 
-        double dLat = this.latitude - latitudeUser,dLong = this.longitude - longitudeUser;
+        double dLat = this.latitude - latitudeUser, dLong = this.longitude - longitudeUser;
 
-
-        double x = (dLat*Math.PI/180./2.)*(dLat*Math.PI/180./2.)
-                + Math.cos(latitudeUser*Math.PI/180.) * Math.cos(this.latitude*Math.PI/180.)
-                * (dLong*Math.PI/180./2.)*(dLong*Math.PI/180./2.);
-        if(x < 0){
-            this.distanceFromUser = 2 * Tracker.EARTH_RADIUS * Math.atan2(Math.sqrt(-x),Math.sqrt(1+x));
-        }
-        else{
-            this.distanceFromUser = 2 * Tracker.EARTH_RADIUS * Math.atan2(Math.sqrt(x),Math.sqrt(1-(x)));
+        double x = Math.sin(dLat * Math.PI / 180. / 2.) * Math.sin(dLat * Math.PI / 180. / 2.)
+                + Math.cos(latitudeUser * Math.PI / 180.) * Math.cos(this.latitude * Math.PI / 180.)
+                * (dLong * Math.PI / 180. / 2.) * (dLong * Math.PI / 180. / 2.);
+        if (x < 0) {
+            this.distanceFromUser = 2 * Tracker.EARTH_RADIUS * Math.atan2(Math.sqrt(-x), Math.sqrt(1 + x));
+        } else {
+            this.distanceFromUser = 2 * Tracker.EARTH_RADIUS * Math.atan2(Math.sqrt(x), Math.sqrt(1 - (x)));
         }
 
-        Log.d("Interest distance",""+name+" : "+getDistanceFromUser());
+        Log.d("Interest distance", "" + name + " : " + getDistanceFromUser());
     }
 
     // Mixel answer : https://stackoverflow.com/questions/9457988/bearing-from-one-coordinate-to-another
@@ -47,10 +45,11 @@ public class Interest {
         double dLong = Math.toRadians(this.longitude) - Math.toRadians(longitudeUser);
 
         double x = Math.atan2(Math.sin(dLong) * Math.cos(Math.toRadians(this.latitude)),
-                Math.cos(Math.toRadians(latitudeUser)) * Math.sin(Math.toRadians(this.latitude)) - Math.sin(Math.toRadians(latitudeUser)) * Math.cos(Math.toRadians(this.latitude)) * Math.cos(dLong));
+                Math.cos(Math.toRadians(latitudeUser)) * Math.sin(Math.toRadians(this.latitude))
+                        - Math.sin(Math.toRadians(latitudeUser)) * Math.cos(Math.toRadians(this.latitude)) * Math.cos(dLong));
         this.bearingFromUser = (x * 180 / Math.PI + 360) % 360;
-        //Log.d("Interest bearing",""+name+" : "+getBearingFromUser());
 
+        Log.d("Interest bearing", "" + name + " : " + getBearingFromUser());
     }
 
     public double getBearingFromUser() {
