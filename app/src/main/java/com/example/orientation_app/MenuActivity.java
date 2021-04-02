@@ -116,6 +116,8 @@ public class MenuActivity extends AppCompatActivity {
         listNomCarte.add(findViewById(R.id.textNomCarte1));
         listNomCarte.add(findViewById(R.id.textNomCarte2));
         listNomCarte.add(findViewById(R.id.textNomCarte3));
+        listNomCarte.add(findViewById(R.id.textNomCarte4));
+
 
         background = findViewById(R.id.backgroundMenu);
         logo = findViewById(R.id.logoMenu);
